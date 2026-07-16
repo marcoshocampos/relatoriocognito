@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# uv
+.python-version
+
+# PyInstaller
+build/
+dist/
+*.spec.bak
+
+# Testes / cobertura
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editor / SO
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Saídas geradas localmente (relatórios de teste)
+*.pdf
+!docs/reference/*.pdf
