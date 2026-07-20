@@ -1,80 +1,125 @@
 ---
 titulo: Modelo visual de referência (Canva)
-fonte: link Canva "Modelo Relatorio RV" fornecido pelo usuário em 16/07/2026
+fonte: link Canva "Modelo Relatorio RV" (16/07/2026, atualizado 17-18/07/2026) + PNGs em docs/reference/modelo-canva/
 ---
 
 # Modelo visual de referência
 
 Fonte original: link privado do Canva fornecido pelo usuário (não é público, não deve
-ser referenciado fora deste projeto). O editor do Canva usa canvas e não foi possível
-tirar screenshot via automação de navegador nesta sessão; o conteúdo abaixo foi
-extraído lendo a árvore de acessibilidade/texto das duas páginas do design. Serve como
-especificação textual dos rótulos, métricas e layout geral.
+ser referenciado fora deste projeto). A partir de 17/07/2026, temos também os PNGs
+exportados de cada página em
+[`docs/reference/modelo-canva/`](../reference/modelo-canva) — usar essas imagens como
+fonte primária para cor/tipografia/posicionamento; este documento é a especificação
+textual (rótulos, métricas, estrutura) derivada delas.
 
-**Se surgir dúvida visual fina (cores exatas, posicionamento em pixel, tipografia)
-durante a implementação dos gráficos/PDF, pedir ao usuário para exportar as páginas
-do Canva como imagem/PDF e adicionar em `docs/reference/`.**
+O modelo agora tem **4 páginas** (cresceu de 2 para 4 em 17/07/2026 — confirmado
+pelo usuário como escopo real do MVP, ver
+[06-decisoes.md](06-decisoes.md)).
+
+Todas as páginas trazem, no canto superior direito, um selo hexagonal com o texto
+"Cognito" — é a marca/branding do próprio produto (não é o logo do time, que aparece
+à esquerda do cabeçalho). Confirmado (17/07/2026) que deve aparecer fixo em todo PDF
+gerado pelo sistema, independente do cliente — ver
+[07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 12.
 
 ## Página 1 — Dashboard de grupo ("Dashboard Overview")
 
-Cabeçalho:
-- Nome do grupo (ex.: "Atletico - MG")
-- Título: "Dashboard Overview" + data (ex.: "27/04/2026")
+Imagem: [`dashboard_overview.png`](../reference/modelo-canva/dashboard_overview.png)
+
+Cabeçalho: logo do time + nome do grupo (ex.: "Atletico - MG") + título "Dashboard
+Overview" + data (ex.: "27/04/2026").
 
 Blocos de conteúdo:
-- **Média de acertos do grupo** — gráfico de rosca com categorias "Acertos" / "Erros".
-- **Média de classificação do TR** — gráfico de rosca/distribuição com as 4 categorias:
-  "No tempo" 47.1%, "Precoce" 23.5%, "Perda de bola" 17.6%, "Tardio" 11.8%.
-  (Nota: no modelo o rótulo usado é **"No tempo"**, equivalente a `Ideal` no CSV —
-  ver [02-modelo-dados.md](02-modelo-dados.md). Ao rotular os gráficos, usar "No
-  tempo" como label visível para o valor `Ideal` do CSV.)
-- **Média do TR** — valor único em destaque (ex.: "2,6 s").
-- **Acertos por decisão** — gráfico de barras comparando categorias: "Ideal",
-  "Chute", "Passe Esq", "Passe Dir", "Manutenção". Estes são rótulos abreviados de
-  exibição para as respostas do CSV — mapeamento sugerido:
+- **Media de acertos do grupo** — rosca/pizza: "Acertos" (verde, ex. 21) x "Erros"
+  (vermelho, ex. 9).
+- **Media de classificação do TR** — rosca com as 4 categorias: "No tempo" 47.1%
+  (verde), "Precoce" 23.5% (amarelo), "Tardio" 11.8% (laranja), "Perda de bola" 17.6%
+  (vermelho). (Nota: o rótulo visível é **"No tempo"**, equivalente a `Ideal` no CSV
+  — ver [02-modelo-dados.md](02-modelo-dados.md).)
+- **Media do TR** — valor único em destaque (ex.: "2,6 s").
+- **Acertos por decisão** — gráfico de barras com duas séries, nas categorias
+  "Chute", "Passe Esq", "Passe Dir", "Manutenção":
+  - **"Atletico"** (preto, nome do grupo) = contagem de `RespostaDada` por
+    categoria — o que o atleta/time efetivamente fez.
+  - **"Ideal"** (verde) = contagem de `RespostaCorreta` por categoria — o que
+    deveria ter sido feito. Confirmado com o cliente (18/07/2026) — ver
+    [07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 3.
+
+  Mapeamento de rótulo abreviado → valor da coluna do CSV:
   - "Chute" → `Chutar ao Gol`
   - "Passe Esq" → `Passe a Esquerda`
   - "Passe Dir" → `Passe a Direita`
   - "Manutenção" → `Manter Posse`
-  - "Ideal" aqui parece ser uma categoria de referência/meta dentro do comparativo,
-    não confundir com o "Ideal" de `ClassificacaoTR` — validar com o usuário ao
-    implementar este gráfico especificamente (ver
-    [07-pontos-em-aberto.md](07-pontos-em-aberto.md)).
 
 ## Página 2 — Dashboard individual ("Dashboard individual")
 
-Cabeçalho:
-- Nome do grupo (ex.: "Atletico - MG")
-- Nome do atleta (placeholder "Nome do atleta")
-- Metadados do atleta: data de nascimento (ex.: "03/2013"), lateralidade (ex.:
-  "Canhoto"), posição (ex.: "Atacante") — **estes 3 campos de metadados do atleta
-  não existem no CSV nem foram mencionados no planejamento original como entrada do
-  sistema.** Ver pendência em [07-pontos-em-aberto.md](07-pontos-em-aberto.md) —
-  não implementar como campo editável sem confirmar com o usuário se é informação
-  real a ser capturada no MVP ou só decoração do template que pode ficar em branco.
-- Título: "Dashboard individual" + data.
+Imagem: [`dashboard_individual.png`](../reference/modelo-canva/dashboard_individual.png)
+
+Cabeçalho: logo do time + nome do grupo + título "Dashboard individual" + data;
+à direita, metadados do atleta: "Nome do atleta", data (ex.: "03/2013"), lateralidade
+("Canhoto"), posição ("meio campista") + ícone de avatar genérico.
+Lateralidade e posição vêm do campo `Jogador` (ver
+[02-modelo-dados.md](02-modelo-dados.md)). A data ao lado do nome (ex.: "03/2013")
+**ainda não tem coluna correspondente no CSV** — ver
+[07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 4.
 
 Blocos de conteúdo:
-- **Indicador de tentativas/acertos** — "Tentativas: 30", "Acertos: 20", "Média do
-  grupo: 15" (valores de exemplo do template, não são dados reais).
-- **Classificação do TR por acerto e erro** — cruzamento visual das categorias
-  "Precoce", "No tempo", "Tardio" com "Acertou"/"Errou" (nota: aqui o template não
-  lista "Perda de bola" explicitamente nas categorias visíveis — confirmar se deve
-  aparecer também quando houver dados dessa categoria).
-- **Média do TR** — dois valores lado a lado: "2.5 s" e "1.8 s" — ver interpretação
-  adotada em [03-metricas.md](03-metricas.md) (tempo médio em acertos vs. em erros).
-- **Taxa de acerto** — valor único em destaque (ex.: "66%").
-- **Atleta em relação ao grupo** — indicador comparativo (gráfico não totalmente
-  claro pela árvore de texto — validar visualmente se possível).
-- **Taxa de acerto por resposta** — tabela/gráfico com colunas "Média Grupo" /
-  "Nome Atleta" por categoria de resposta: "Manutenção", "Passe Dir", "Passe Esq",
-  "Chutes" (mesmas categorias abreviadas da página de grupo).
+- **Tentativas / Acertos / Média do grupo** — indicador com "Tentativas: 30",
+  "Acertos: 20", "Media do grupo: 15" (valores de exemplo do template).
+- **Taxa de acerto** — arco/gauge com valor em destaque (ex.: "66%").
+- **Media do TR** — dois valores lado a lado: "Acertos 2.5 s" (verde) / "Erros 1.8 s"
+  (vermelho) — ver interpretação adotada em [03-metricas.md](03-metricas.md).
+- **Classificação do TR por acerto e erro** — barras horizontais empilhadas:
+  "Acertou" (Precoce/No tempo/Tardio) e "Errou" (idem). No exemplo: Acertou = 10
+  (No tempo, verde) + 10 (Tardio, amarelo); Errou = 6 (Precoce, vermelho) + 4 (No
+  tempo, verde). "Perda de bola" fica de fora desse gráfico por design, confirmado
+  com o usuário — ver [07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 5.
+- **Taxa de acerto por resposta** — gráfico radar/diamante com eixos "Chute", "Passe
+  Dir", "Manutenção", "Passe Esq" — compara a distribuição do atleta.
+
+## Página 3 — Ações por pé ("Ações por pé") — NOVA (17/07/2026)
+
+Imagem: [`acoes_por_pe.png`](../reference/modelo-canva/acoes_por_pe.png)
+
+Mesmo cabeçalho da página individual (time, atleta, lateralidade, posição). Usa as
+colunas `PeEsperado` / `PeUsado` — ver [02-modelo-dados.md](02-modelo-dados.md) e
+[03-metricas.md](03-metricas.md).
+
+Blocos de conteúdo:
+- **Ações por pé** — pizza: "Pé Esquerdo" 68.8% (verde) x "Pé direito" 31.3%
+  (vermelho).
+- Par de ícones de pé (esquerdo verde, direito vermelho) — decorativo.
+- **Media de TR por pé** — barras: "Esquerdo" (verde, ~2s) x "Direito" (vermelho,
+  ~3s).
+- **Acertos por pé usado** — barras horizontais empilhadas: "Acertou" = Esquerdo 13
+  (verde) + Direito 7 (vermelho); "Errou" = Esquerdo 6 (verde) + Direito 4
+  (vermelho).
+
+## Página 4 — Comparação atleta x grupo ("Comparação atleta grupo") — NOVA (17/07/2026)
+
+Imagem: [`comparacao_atleta_grupo.png`](../reference/modelo-canva/comparacao_atleta_grupo.png)
+
+Mesmo cabeçalho da página individual.
+
+Blocos de conteúdo:
+- **Media de acertos do grupo** — linha comparando "Media Grupo" (cinza) x "Nome
+  Atleta" (verde) por categoria de resposta (Manutenção, Passa Dir, Passe Esq,
+  Chutes), eixo Y em porcentagem. É a mesma métrica de "taxa de acerto por resposta"
+  da página 2 (radar), exibida como linha aqui — confirmado com o usuário
+  (17/07/2026) que as duas visualizações são intencionais, não uma duplicação a
+  remover — ver [07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 11.
+- **Media de acertos posição** — mesmo formato de linha, mas comparando "Meio
+  campista" (média da posição do atleta, cinza) x "Nome Atleta" (verde).
+- **Acertos por posição** — barras comparando "Media da posição" (preto) x
+  "Jogador" (verde) nas 6 posições: Zagueiro, Meio Campista, Atacante, Volante,
+  Lateral Direito, Lateral Esquerdo. Confirmado (17/07/2026) que "média da posição"
+  é calculada só entre os atletas do relatório atual — se o grupo não tiver atleta
+  em alguma posição, essa posição fica sem dado (não travar a geração do PDF). Ver
+  [06-decisoes.md](06-decisoes.md).
 
 ## Observações gerais
 
-- Cores e tipografia exatas não foram capturadas (sem screenshot). Na primeira
-  versão dos gráficos, usar uma paleta neutra e consistente; ajustar fino de visual
-  é a última etapa prevista no cronograma do planejamento original (seção 10:
-  "Testes com dados reais e ajustes finos de visual").
-- O layout é fixo nesta primeira versão — o usuário não edita o layout do PDF, só o
-  conteúdo (nome do grupo, logo, quais atletas entram).
+- Layout fixo — o usuário não edita o layout do PDF, só o conteúdo (nome do grupo,
+  logo, quais atletas entram).
+- Selo "Cognito" no canto superior direito de todas as páginas — ver nota no topo
+  deste documento.

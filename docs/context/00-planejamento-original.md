@@ -69,13 +69,13 @@ Confirmado com um arquivo real (`Geral_10_3_2025.csv`). Uma linha por tentativa/
 | `Jogador` | Identificador + nome do atleta | ` 01 Caio` |
 | `TempoReacao` | Tempo de decisão, em **segundos** (confirmado) | `13.31` |
 | `ClassificacaoTR` | Classificação do tempo: `Precoce`, `Tardio`, `Ideal` ou `Perda de bola` (as 4 já vêm prontas no CSV) | `Precoce` |
-| `Correto?` | Se a resposta bateu com a ideal: `Acertou` ou `Errou` (já vem pronto, não é recalculado) | `Errou` |
+| `Correto` | Se a resposta bateu com a ideal: `Acertou` ou `Errou` (já vem pronto, não é recalculado) | `Errou` |
 | `RespostaCorreta` | Qual era a resposta ideal para aquela jogada | `Chutar ao Gol` |
 | `RespostaDada` | Qual resposta o atleta efetivamente deu | `Manter Posse` |
 | `Data` | Data do teste | `10/03/2025` |
 | `Hora` | Horário da tentativa | `11:02` |
 
-Premissa confirmada: **o sistema não recalcula `ClassificacaoTR` nem `Correto?`** — essas
+Premissa confirmada: **o sistema não recalcula `ClassificacaoTR` nem `Correto`** — essas
 colunas já vêm prontas da ferramenta de teste. O sistema só agrega (conta, soma, tira
 média) em cima delas.
 
@@ -170,7 +170,7 @@ visualmente).
 - Usuário final não-técnico → interface simples de botões.
 - Formato de CSV fixo e consistente (confirmado com arquivo real).
 - Um CSV por atleta; grupo formado por seleção manual de arquivos.
-- `ClassificacaoTR` e `Correto?` já vêm prontos no CSV — sistema só agrega.
+- `ClassificacaoTR` e `Correto` já vêm prontos no CSV — sistema só agrega.
 - `TempoReacao` está em segundos.
 - `ClassificacaoTR` tem 4 valores possíveis: Precoce, Tardio, Ideal, Perda de bola.
 - PDF final: 1 arquivo por sessão, página de grupo + 1 página por atleta.

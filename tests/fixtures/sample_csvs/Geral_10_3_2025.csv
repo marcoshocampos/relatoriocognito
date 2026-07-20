@@ -1,17 +1,16 @@
-Treino,Jogador,TempoReacao,ClassificacaoTR,Correto?,RespostaCorreta,RespostaDada,Data,Hora
-Geral_10_3_2025, 01 Caio,13.31,Precoce,Errou,Chutar ao Gol,Manter Posse,10/03/2025,09:30
-Geral_10_3_2025, 01 Caio,16,Tardio,Errou,Chutar ao Gol,Manter Posse,10/03/2025,11:02
-Geral_10_3_2025, 01 Caio,16,Tardio,Errou,Chutar ao Gol,Manter Posse,10/03/2025,11:03
-Geral_10_3_2025, 01 Caio,16,Tardio,Errou,Chutar ao Gol,Passe a Esquerda,10/03/2025,11:06
-Geral_10_3_2025, 01 Caio,16,Tardio,Errou,Chutar ao Gol,Manter Posse,10/03/2025,11:07
-Geral_10_3_2025, 01 Caio,13.75,Ideal,Errou,Chutar ao Gol,Manter Posse,10/03/2025,11:13
-Geral_10_3_2025, 01 Caio,14.87,Ideal,Errou,Chutar ao Gol,Passe a Esquerda,10/03/2025,11:14
-Geral_10_3_2025, 01 Caio,13.24,Precoce,Errou,Chutar ao Gol,Manter Posse,10/03/2025,11:15
-Geral_10_3_2025, 01 Caio,14.04,Ideal,Errou,Chutar ao Gol,Passe a Esquerda,10/03/2025,11:17
-Geral_10_3_2025, 01 Caio,13.07,Precoce,Errou,Chutar ao Gol,Manter Posse,10/03/2025,11:17
-Geral_10_3_2025, 01 Caio,13.43,Precoce,Errou,Chutar ao Gol,Manter Posse,10/03/2025,11:20
-Geral_10_3_2025, 01 Caio,13.69,Ideal,Errou,Chutar ao Gol,Passe a Esquerda,10/03/2025,11:24
-Geral_10_3_2025, 01 Caio,13.76,Ideal,Errou,Chutar ao Gol,Passe a Esquerda,10/03/2025,11:25
-Geral_10_3_2025, 01 Caio,13.41,Precoce,Errou,Chutar ao Gol,Passe a Direita,10/03/2025,11:28
-Geral_10_3_2025, 01 Caio,13.43,Precoce,Errou,Chutar ao Gol,Passe a Esquerda,10/03/2025,11:30
-,,,,,,,,
+Treino,Jogador,PeEsperado,PeUsado,TempoReacao,ClassificacaoTR,Correto,RespostaCorreta,RespostaDada,Data,Hora
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Esquerdo,Esquerdo,13.31,Precoce,Errou,Chutar ao Gol,Manter Posse,10/03/2025,09:30
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Direito,Direito,16,Tardio,Errou,Chutar ao Gol,Manter Posse,10/03/2025,11:02
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Esquerdo,Esquerdo,16,Tardio,Errou,Chutar ao Gol,Manter Posse,10/03/2025,11:03
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Direito,Direito,16,Tardio,Errou,Chutar ao Gol,Passe a Esquerda,10/03/2025,11:06
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Esquerdo,Esquerdo,16,Tardio,Errou,Chutar ao Gol,Manter Posse,10/03/2025,11:07
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Direito,Direito,13.75,Ideal,Errou,Chutar ao Gol,Manter Posse,10/03/2025,11:13
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Esquerdo,Esquerdo,14.87,Ideal,Errou,Chutar ao Gol,Passe a Esquerda,10/03/2025,11:14
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Direito,Direito,13.24,Precoce,Errou,Chutar ao Gol,Manter Posse,10/03/2025,11:15
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Esquerdo,Esquerdo,14.04,Ideal,Errou,Chutar ao Gol,Passe a Esquerda,10/03/2025,11:17
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Direito,Direito,13.07,Precoce,Errou,Chutar ao Gol,Manter Posse,10/03/2025,11:17
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Esquerdo,Esquerdo,13.43,Precoce,Errou,Chutar ao Gol,Manter Posse,10/03/2025,11:20
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Direito,Direito,13.69,Ideal,Errou,Chutar ao Gol,Passe a Esquerda,10/03/2025,11:24
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Esquerdo,Esquerdo,13.76,Ideal,Errou,Chutar ao Gol,Passe a Esquerda,10/03/2025,11:25
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Direito,Direito,13.41,Precoce,Errou,Chutar ao Gol,Passe a Direita,10/03/2025,11:28
+Geral_10_3_2025,Caio - Canhoto - Meio campista,Esquerdo,Esquerdo,13.43,Precoce,Errou,Chutar ao Gol,Passe a Esquerda,10/03/2025,11:30

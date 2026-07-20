@@ -26,7 +26,7 @@ sendo implementado:
 
 ## Regras específicas deste projeto
 
-- `ClassificacaoTR` e `Correto?` do CSV **nunca são recalculados**, só agregados.
+- `ClassificacaoTR` e `Correto` do CSV **nunca são recalculados**, só agregados.
 - `domain/` não deve importar nada de `io/`, `charts/`, `pdf/` ou `gui/` — é lógica
   pura, testável sem I/O.
 - Não implementar nada listado como "fora de escopo" em

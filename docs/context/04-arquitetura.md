@@ -1,6 +1,6 @@
 ---
 titulo: Arquitetura técnica
-fonte: 00-planejamento-original.md (seções 3, 6, 9) + decisões em 06-decisoes.md
+fonte: 00-planejamento-original.md (seções 3, 6, 9) + decisões em 06-decisoes.md (atualizado 17/07/2026: MVP passou a ter 4 páginas)
 ---
 
 # Arquitetura
@@ -14,11 +14,17 @@ independente — não há persistência entre gerações de relatório.
 [Tela: nome do grupo + logo]
      → [Tela: selecionar CSVs dos atletas]
      → [Leitura e validação dos CSVs]
-     → [Cálculo das métricas (grupo e por atleta)]
+     → [Cálculo das métricas (grupo, por atleta, por atleta x posição)]
      → [Geração dos gráficos]
-     → [Montagem do PDF (capa/cabeçalho + página de grupo + páginas individuais)]
+     → [Montagem do PDF (1 página de grupo + 3 páginas por atleta selecionado)]
      → [Salvar arquivo .pdf]
 ```
+
+O PDF final tem, por relatório: 1 página de grupo ("Dashboard Overview") +, para
+cada atleta selecionado, 3 páginas ("Dashboard individual", "Ações por pé",
+"Comparação atleta grupo") — ver
+[05-modelo-visual-referencia.md](05-modelo-visual-referencia.md) e decisão de escopo
+em [07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 10.
 
 ## Camadas e mapeamento para pastas do código
 
@@ -28,17 +34,26 @@ mais sensível a erro (as contas de métricas) seja testável isoladamente sem p
 de CSV real, matplotlib ou GUI:
 
 - **`domain/`** — lógica de negócio pura, sem I/O. `models.py` (estruturas de dados:
-  tentativa/trial, atleta, grupo) e `metrics.py` (cálculos da seção 5 de
-  [03-metricas.md](03-metricas.md)). Alvo principal dos testes de unidade.
+  tentativa/trial, atleta — incluindo lateralidade e posição extraídas do campo
+  `Jogador`, ver [02-modelo-dados.md](02-modelo-dados.md) — e grupo) e `metrics.py`
+  (cálculos da seção 5 de [03-metricas.md](03-metricas.md), incluindo as métricas por
+  pé e por posição). Alvo principal dos testes de unidade.
 - **`io/`** — `csv_importer.py`: leitura e validação dos CSVs selecionados
-  (parsing, normalização de colunas, descarte de linhas vazias, mensagens de erro —
-  ver [02-modelo-dados.md](02-modelo-dados.md) e seção de tratamento de erros no
+  (parsing, normalização de colunas — inclusive acento/maiúscula inconsistentes,
+  decodificação ISO-8859-1 — descarte de linhas vazias, mensagens de erro — ver
+  [02-modelo-dados.md](02-modelo-dados.md) e seção de tratamento de erros no
   planejamento original).
-- **`charts/`** — geração dos gráficos (rosca, barras, indicador comparativo) com
-  matplotlib, no estilo do modelo de referência
-  ([05-modelo-visual-referencia.md](05-modelo-visual-referencia.md)).
-- **`pdf/`** — montagem do PDF final com reportlab: página de capa/grupo + uma
-  página por atleta, usando os gráficos gerados.
+- **`charts/`** — geração dos gráficos (rosca, barras, radar, linha, indicador
+  comparativo) com matplotlib, no estilo do modelo de referência
+  ([05-modelo-visual-referencia.md](05-modelo-visual-referencia.md)). O radar
+  (página individual) e a linha (página de comparação) são componentes de gráfico
+  distintos, mesmo representando a métrica "taxa de acerto por resposta" — ver
+  [07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 11.
+- **`pdf/`** — montagem do PDF final com reportlab: página de grupo + as 3 páginas
+  por atleta, usando os gráficos gerados. Provavelmente um módulo de layout por tipo
+  de página (ex.: `layout_grupo.py`, `layout_individual.py`, `layout_acoes_pe.py`,
+  `layout_comparacao_grupo.py`) para manter cada página isolada e fácil de ajustar
+  visualmente sem afetar as outras.
 - **`gui/`** — telas em CustomTkinter: (1) nome do grupo + logo, (2) seleção dos
   CSVs dos atletas, (3) gerar relatório / salvar PDF. `gui/` só orquestra chamadas
   para `domain/`, `io/`, `charts/` e `pdf/` — não deve conter lógica de cálculo.
