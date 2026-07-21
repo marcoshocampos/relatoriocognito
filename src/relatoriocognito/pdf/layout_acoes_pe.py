@@ -1,0 +1,91 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from reportlab.pdfgen.canvas import Canvas
+
+from relatoriocognito.charts.barras import barras_empilhadas_horizontais, barras_simples
+from relatoriocognito.charts.colors import VERDE, VERMELHO
+from relatoriocognito.charts.decorativos import par_de_chuteiras
+from relatoriocognito.charts.pizza import grafico_pizza
+from relatoriocognito.domain import metrics
+from relatoriocognito.domain.models import Athlete, Group
+from relatoriocognito.pdf.layout_helpers import (
+    GAP,
+    MARGEM,
+    cabecalho,
+    cartao,
+    desenhar_figura,
+    distribuir_colunas,
+    titulo_cartao,
+)
+
+
+def desenhar(
+    c: Canvas,
+    group: Group,
+    atleta: Athlete,
+    caminho_logo: str | Path | None,
+    data: str,
+    *,
+    largura_pagina: float,
+    altura_pagina: float,
+) -> None:
+    y_conteudo = cabecalho(
+        c,
+        largura_pagina=largura_pagina,
+        altura_pagina=altura_pagina,
+        nome_grupo=group.nome,
+        titulo_pagina="Ações por pé",
+        data=data,
+        caminho_logo=caminho_logo,
+        atleta=atleta,
+    )
+
+    colunas = distribuir_colunas(MARGEM, largura_pagina - 2 * MARGEM, pesos=[1.1, 0.8, 1.1])
+    (x1, w1), (x2, w2), (x3, w3) = colunas
+
+    altura_linha1 = 220
+    y_linha1 = y_conteudo - altura_linha1
+
+    # Card 1: Ações por pé (pizza)
+    cartao(c, x1, y_linha1, w1, altura_linha1)
+    titulo_cartao(c, "Ações por pé", x1 + w1 / 2, y_linha1 + altura_linha1 - 20)
+    distribuicao = metrics.distribuicao_pe_usado(atleta.trials)
+    fig_pizza = grafico_pizza(
+        {"Pé Esquerdo": distribuicao["Esquerdo"], "Pé direito": distribuicao["Direito"]},
+        {"Pé Esquerdo": VERDE, "Pé direito": VERMELHO},
+        mostrar_percentual=True,
+    )
+    desenhar_figura(c, fig_pizza, x1 + 10, y_linha1 + 10, w1 - 20, altura_linha1 - 40)
+
+    # Card 2: par de chuteiras (decorativo)
+    cartao(c, x2, y_linha1, w2, altura_linha1)
+    desenhar_figura(c, par_de_chuteiras(), x2 + 15, y_linha1 + 40, w2 - 30, altura_linha1 - 80)
+
+    # Card 3: Media de TR por pé
+    cartao(c, x3, y_linha1, w3, altura_linha1)
+    titulo_cartao(c, "Media de TR por pé", x3 + w3 / 2, y_linha1 + altura_linha1 - 20)
+    media_tr_pe = metrics.media_tr_por_pe(atleta.trials)
+    fig_barras = barras_simples(
+        ["Esquerdo", "Direito"],
+        [media_tr_pe["Esquerdo"], media_tr_pe["Direito"]],
+        [VERDE, VERMELHO],
+    )
+    desenhar_figura(c, fig_barras, x3 + 10, y_linha1 + 10, w3 - 20, altura_linha1 - 40)
+
+    # Linha 2: Acertos por pé usado (largura total)
+    altura_linha2 = 150
+    y_linha2 = y_linha1 - GAP - altura_linha2
+    largura_total = largura_pagina - 2 * MARGEM
+    cartao(c, MARGEM, y_linha2, largura_total, altura_linha2)
+    titulo_cartao(c, "Acertos por pé usado", MARGEM + largura_total / 2, y_linha2 + altura_linha2 - 20)
+    acertos_pe = metrics.acertos_por_pe(atleta.trials)
+    segmentos = {
+        "Esquerdo": [acertos_pe["Acertou"]["Esquerdo"], acertos_pe["Errou"]["Esquerdo"]],
+        "Direito": [acertos_pe["Acertou"]["Direito"], acertos_pe["Errou"]["Direito"]],
+    }
+    fig_stacked = barras_empilhadas_horizontais(
+        ["Acertou", "Errou"], segmentos, {"Esquerdo": VERDE, "Direito": VERMELHO}, figsize=(9.0, 2.4)
+    )
+    desenhar_figura(c, fig_stacked, MARGEM + 16, y_linha2 + 10, largura_total - 32, altura_linha2 - 40)

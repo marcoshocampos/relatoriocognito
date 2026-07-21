@@ -29,8 +29,11 @@ Agregando todos os CSVs (atletas) selecionados para o relatório:
   feito). Confirmado com o cliente em 18/07/2026, ver
   [07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 3.
 - **Indicador de tentativas x acertos x média do grupo** — total de tentativas do
-  grupo, total de acertos, e a média (aparentemente numérica, ver pendência em
-  07) usada como referência de comparação individual.
+  grupo, total de acertos, e a média usada como referência de comparação
+  individual. **Resolvido (19/07/2026, ver [07-pontos-em-aberto.md](07-pontos-em-aberto.md)
+  item 14):** essa "média do grupo" é a média, entre os atletas do grupo, da
+  contagem bruta de tentativas `Correto=Acertou` de cada atleta — não uma
+  porcentagem/taxa (essa já é coberta separadamente pelo gauge "Taxa de acerto").
 
 ## Visão individual (por atleta, dentro do relatório)
 
@@ -79,7 +82,12 @@ Também por atleta, com dois eixos de comparação:
 - **Acertos por posição** — gráfico de barras com 6 categorias fixas de posição
   (`Zagueiro`, `Meio Campista`, `Atacante`, `Volante`, `Lateral Direito`,
   `Lateral Esquerdo`), comparando `Media da posição` (uma barra por posição) contra
-  o valor do `Jogador` (atleta atual).
+  o valor do `Jogador` (atleta atual). **Resolvido (19/07/2026, ver
+  [07-pontos-em-aberto.md](07-pontos-em-aberto.md) item 14):** ambos os valores são
+  contagem bruta de tentativas `Correto=Acertou` (não porcentagem) — `Media da
+  posição` é a média dessa contagem entre os atletas do grupo que jogam naquela
+  posição; o valor do `Jogador` é a contagem de acertos do próprio atleta,
+  constante e repetida como referência nas 6 categorias.
 
 A "média da posição" usada nesses três gráficos é calculada **só entre os atletas
 selecionados no relatório atual** (mesmo grupo da sessão) — confirmado com o

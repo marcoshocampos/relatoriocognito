@@ -695,7 +695,7 @@ dependencies = [
     { name = "reportlab" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "pyinstaller" },
     { name = "pytest" },
@@ -706,11 +706,14 @@ requires-dist = [
     { name = "customtkinter", specifier = ">=5.2" },
     { name = "matplotlib", specifier = ">=3.9" },
     { name = "pandas", specifier = ">=2.2" },
-    { name = "pyinstaller", marker = "extra == 'dev'", specifier = ">=6.10" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3" },
     { name = "reportlab", specifier = ">=4.2" },
 ]
-provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pyinstaller", specifier = ">=6.10" },
+    { name = "pytest", specifier = ">=8.3" },
+]
 
 [[package]]
 name = "reportlab"

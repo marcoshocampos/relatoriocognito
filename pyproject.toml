@@ -11,14 +11,14 @@ dependencies = [
     "customtkinter>=5.2",
 ]
 
-[project.optional-dependencies]
+[project.scripts]
+relatoriocognito = "relatoriocognito.app:main"
+
+[dependency-groups]
 dev = [
     "pytest>=8.3",
     "pyinstaller>=6.10",
 ]
-
-[project.scripts]
-relatoriocognito = "relatoriocognito.app:main"
 
 [build-system]
 requires = ["hatchling"]

@@ -1,0 +1,40 @@
+from __future__ import annotations
+
+import math
+
+from matplotlib.figure import Figure
+
+from relatoriocognito.charts.colors import VERDE
+from relatoriocognito.charts.util import fundo_transparente
+
+
+def grafico_radar(
+    valores: dict[str, float],
+    *,
+    figsize: tuple[float, float] = (4.0, 4.0),
+    cor: str = VERDE,
+) -> Figure:
+    """Radar/diamante. `valores` já deve vir na ordem desejada dos eixos (o
+    primeiro fica no topo, os demais em sentido horário)."""
+    fig = Figure(figsize=figsize)
+    ax = fig.add_subplot(111, projection="polar")
+
+    categorias = list(valores.keys())
+    n = len(categorias)
+    angulos = [2 * math.pi * i / n for i in range(n)]
+    dados = list(valores.values())
+    angulos_fechado = angulos + angulos[:1]
+    dados_fechado = dados + dados[:1]
+
+    ax.plot(angulos_fechado, dados_fechado, color=cor, linewidth=2)
+    ax.fill(angulos_fechado, dados_fechado, color=cor, alpha=0.3)
+
+    ax.set_xticks(angulos)
+    ax.set_xticklabels(categorias)
+    ax.set_ylim(0, 100)
+    ax.set_yticks([25, 50, 75, 100])
+    ax.set_yticklabels(["25%", "50%", "75%", "100%"], fontsize=7)
+    ax.set_theta_offset(math.pi / 2)
+    ax.set_theta_direction(-1)
+    fundo_transparente(fig, ax)
+    return fig

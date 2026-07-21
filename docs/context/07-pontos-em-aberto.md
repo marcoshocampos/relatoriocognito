@@ -120,3 +120,33 @@ status conforme forem sendo resolvidos (não apagar o item, registrar a resposta
     imagem do selo precisa ser adicionado em `src/relatoriocognito/resources/` para
     ir embutido no `.exe` — pedir ao usuário o arquivo de origem (ideal em alta
     resolução/vetor) quando chegar a hora de implementar essa parte.
+
+## Encontrados ao cruzar as imagens de referência na implementação do MVP (19/07/2026)
+
+13. **Posição do selo Cognito inconsistente entre as imagens de referência.**
+    — Status: **resolvido (19/07/2026)** — a imagem `dashboard_overview.png`
+    (página de grupo) mostra o selo no canto **inferior esquerdo**, enquanto
+    `dashboard_individual.png`, `acoes_por_pe.png` e `comparacao_atleta_grupo.png`
+    mostram **superior direito** — mesma posição descrita no texto de
+    [05-modelo-visual-referencia.md](05-modelo-visual-referencia.md) para "todas as
+    páginas". Usuário confirmou: manter **superior direito nas 4 páginas**,
+    tratando a posição da imagem de grupo como inconsistência do rascunho Canva,
+    não como comportamento intencional a replicar.
+
+14. **Natureza da métrica "Acertos" (sem a palavra "Taxa") na página individual e na
+    página de comparação.**
+    — Status: **resolvido (19/07/2026)** — o indicador "Media do grupo" (página
+    "Dashboard individual", ao lado de "Tentativas" e "Acertos") e o gráfico
+    "Acertos por posição" (página "Comparação atleta grupo") usam, nas imagens de
+    referência, escala compatível com **contagem bruta** (0-30, mesma escala de
+    "Tentativas: 30"), diferente dos gráficos "Taxa de acerto" (%, escala 0-100) que
+    aparecem na mesma página. A página individual já tem um gauge dedicado à taxa de
+    acerto (66%), reforçando que esses elementos "Acertos" são uma métrica
+    diferente. Usuário confirmou a leitura de **contagem bruta**, não porcentagem:
+    - `Media do grupo` (página individual) = média, entre os atletas do grupo, da
+      contagem de tentativas `Correto=Acertou` de cada atleta.
+    - `Acertos por posição` (página de comparação) = média dessa mesma contagem de
+      acertos entre os atletas de cada uma das 6 posições fixas, comparada com a
+      contagem de acertos do próprio atleta (valor único, repetido como referência
+      nas 6 categorias do gráfico).
+    Atualizado em [03-metricas.md](03-metricas.md).
