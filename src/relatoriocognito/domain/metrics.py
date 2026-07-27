@@ -76,11 +76,17 @@ def classificacao_tr_por_resultado(trials: Sequence[Trial]) -> dict[str, dict[st
     }
 
 
-def acertos_por_decisao(trials: Sequence[Trial]) -> dict[str, tuple[int, int]]:
-    """Por categoria de resposta: (contagem em RespostaCorreta, contagem em RespostaDada)."""
+def acertos_por_decisao(athletes: Sequence[Athlete]) -> dict[str, tuple[float, float]]:
+    """Por categoria de resposta: média por atleta de (RespostaCorreta, RespostaDada).
+
+    Cada contagem é dividida pelo número de atletas do grupo (total/atletas, não
+    percentual) — mesma convenção de docs/context/07-pontos-em-aberto.md item 14.
+    """
+    trials = trials_do_grupo(athletes)
     ideal = Counter(t.resposta_correta for t in trials)
     dado = Counter(t.resposta_dada for t in trials)
-    return {cat: (ideal[cat], dado[cat]) for cat in RESPOSTA_CATEGORIAS}
+    n = len(athletes) or 1
+    return {cat: (ideal[cat] / n, dado[cat] / n) for cat in RESPOSTA_CATEGORIAS}
 
 
 def taxa_acerto_por_resposta(trials: Sequence[Trial]) -> dict[str, float]:
@@ -161,22 +167,23 @@ def media_acertos_por_atleta(athletes: Sequence[Athlete]) -> float:
     return sum(contagens) / len(contagens)
 
 
-def acertos_por_posicao(
-    athletes: Sequence[Athlete], atleta: Athlete
-) -> dict[str, float | None]:
+def acertos_por_posicao(athletes: Sequence[Athlete]) -> dict[str, float | None]:
     """Média da contagem de Acertou por posição, entre os atletas do grupo.
 
-    Contagem bruta, não porcentagem (item 14). O próprio `atleta` é excluído da
-    média da posição dele, para não comparar contra si mesmo (mesmo critério de
-    `trials_por_posicao`). Posição sem nenhum atleta no grupo retorna `None`
-    (item 9) — o chamador não deve travar a geração do relatório por causa disso.
+    Contagem bruta, não porcentagem (item 14). A média inclui **todos** os atletas
+    carregados na posição, inclusive aquele que é o foco do relatório — assim a
+    barra de média existe em qualquer posição com dado, mesmo quando o atleta é o
+    único da posição dele (aí as duas barras ficam iguais por definição). Difere de
+    `trials_por_posicao`, que exclui o próprio atleta porque lá a comparação é
+    "eu x os outros". Posição sem nenhum atleta no grupo retorna `None` (item 9) —
+    o chamador não deve travar a geração do relatório por causa disso.
     """
     resultado: dict[str, float | None] = {}
     for posicao in POSICOES:
         contagens = [
             contagem_acertos_erros(a.trials)["Acertou"]
             for a in athletes
-            if _mesma_posicao(a.posicao, posicao) and a is not atleta
+            if _mesma_posicao(a.posicao, posicao)
         ]
         resultado[posicao] = sum(contagens) / len(contagens) if contagens else None
     return resultado

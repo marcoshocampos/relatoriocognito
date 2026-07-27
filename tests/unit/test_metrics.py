@@ -107,17 +107,24 @@ def test_classificacao_tr_por_resultado_exclui_perda_de_bola():
     assert "Perda de bola" not in resultado["Errou"]
 
 
-def test_acertos_por_decisao_separa_ideal_de_dado():
-    trials = [
-        _trial(resposta_correta="Chutar ao Gol", resposta_dada="Manter Posse"),
-        _trial(resposta_correta="Chutar ao Gol", resposta_dada="Manter Posse"),
-        _trial(resposta_correta="Manter Posse", resposta_dada="Manter Posse"),
-    ]
-    resultado = metrics.acertos_por_decisao(trials)
-    assert resultado["Chutar ao Gol"] == (2, 0)
-    assert resultado["Manter Posse"] == (1, 3)
-    assert resultado["Passe a Esquerda"] == (0, 0)
-    assert resultado["Passe a Direita"] == (0, 0)
+def test_acertos_por_decisao_e_media_por_atleta():
+    atleta1 = _atleta(
+        "A",
+        "Zagueiro",
+        [
+            _trial(resposta_correta="Chutar ao Gol", resposta_dada="Manter Posse"),
+            _trial(resposta_correta="Chutar ao Gol", resposta_dada="Manter Posse"),
+            _trial(resposta_correta="Manter Posse", resposta_dada="Manter Posse"),
+        ],
+    )
+    atleta2 = _atleta(
+        "B", "Atacante", [_trial(resposta_correta="Chutar ao Gol", resposta_dada="Chutar ao Gol")]
+    )
+    resultado = metrics.acertos_por_decisao([atleta1, atleta2])
+    assert resultado["Chutar ao Gol"] == (1.5, 0.5)
+    assert resultado["Manter Posse"] == (0.5, 1.5)
+    assert resultado["Passe a Esquerda"] == (0.0, 0.0)
+    assert resultado["Passe a Direita"] == (0.0, 0.0)
 
 
 def test_taxa_acerto_por_resposta_condiciona_em_resposta_correta():
@@ -185,21 +192,32 @@ def test_media_acertos_por_atleta_lista_vazia_nao_quebra():
     assert metrics.media_acertos_por_atleta([]) == 0.0
 
 
-def test_acertos_por_posicao_exclui_o_proprio_atleta_e_marca_posicao_sem_atleta():
+def test_acertos_por_posicao_inclui_todos_os_atletas_e_marca_posicao_sem_atleta():
     caio = _atleta("Caio", "Meio Campista", [_trial(correto="Acertou")] * 20)
     bruno = _atleta("Bruno", "Meio Campista", [_trial(correto="Acertou")] * 10)
     ana = _atleta("Ana", "Atacante", [_trial(correto="Acertou")] * 6)
 
-    resultado = metrics.acertos_por_posicao([caio, bruno, ana], caio)
+    resultado = metrics.acertos_por_posicao([caio, bruno, ana])
 
-    # Meio Campista exclui Caio (o próprio atleta): só sobra Bruno (10).
-    assert resultado["Meio Campista"] == 10.0
+    # Meio Campista é a média de todos os atletas da posição: (20 + 10) / 2.
+    assert resultado["Meio Campista"] == 15.0
     assert resultado["Atacante"] == 6.0
     # Posições sem nenhum atleta no grupo ficam sem dado (item 9).
     assert resultado["Zagueiro"] is None
     assert resultado["Volante"] is None
     assert resultado["Lateral Direito"] is None
     assert resultado["Lateral Esquerdo"] is None
+
+
+def test_acertos_por_posicao_com_atleta_unico_na_posicao_tem_media_igual_a_ele():
+    # A média inclui o próprio atleta, então a posição sempre tem barra — antes
+    # ela ficava sem dado quando o atleta era o único da posição dele.
+    caio = _atleta("Caio", "Meio Campista", [_trial(correto="Acertou")] * 20)
+    ana = _atleta("Ana", "Atacante", [_trial(correto="Acertou")] * 6)
+
+    resultado = metrics.acertos_por_posicao([caio, ana])
+
+    assert resultado["Meio Campista"] == 20.0
 
 
 def test_acertos_por_posicao_ignora_diferenca_de_maiuscula_da_posicao():
@@ -209,9 +227,9 @@ def test_acertos_por_posicao_ignora_diferenca_de_maiuscula_da_posicao():
     caio = _atleta("Caio", "Meio campista", [_trial(correto="Acertou")] * 20)
     ana = _atleta("Ana", "meio campista", [_trial(correto="Acertou")] * 10)
 
-    resultado = metrics.acertos_por_posicao([caio, ana], caio)
+    resultado = metrics.acertos_por_posicao([caio, ana])
 
-    assert resultado["Meio Campista"] == 10.0
+    assert resultado["Meio Campista"] == 15.0
 
 
 def test_trials_por_posicao_ignora_diferenca_de_maiuscula():

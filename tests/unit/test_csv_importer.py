@@ -73,6 +73,16 @@ def test_fallback_de_encoding_latin1(tmp_path):
     assert atleta.posicao == "Zagueiro"
 
 
+def test_tempo_reacao_com_virgula_decimal(tmp_path):
+    # CSV reexportado/editado no Excel com localidade PT-BR troca "." por "," e
+    # coloca o valor entre aspas (já que "," também é o separador de campos) —
+    # ver docs/context/07-pontos-em-aberto.md.
+    linha = _linha(tempo_reacao='"13,31"')
+    caminho = _escrever_csv(tmp_path, [linha])
+    atleta = carregar_csv(caminho)
+    assert atleta.trials[0].tempo_reacao == 13.31
+
+
 def test_normaliza_colunas_case_insensitive(tmp_path):
     cabecalho_minusculo = (
         "treino,jogador,peesperado,peusado,temporeacao,classificacaotr,correto,"

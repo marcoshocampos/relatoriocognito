@@ -81,10 +81,10 @@ def desenhar(
     )
     desenhar_figura(c, fig_donut, x2 + 10, y_cartao_pequeno + 10, w2 - 20, altura_cartao_pequeno - 40)
 
-    # Card 3: Acertos por decisão (altura combinada das duas linhas)
+    # Card 3: Media de acertos por decisão (altura combinada das duas linhas)
     cartao(c, x3, y_media_tr, w3, altura_total)
-    titulo_cartao(c, "Acertos por decisão", x3 + w3 / 2, y_media_tr + altura_total - 20)
-    decisao = metrics.acertos_por_decisao(trials)
+    titulo_cartao(c, "Media de acertos por decisão", x3 + w3 / 2, y_media_tr + altura_total - 20)
+    decisao = metrics.acertos_por_decisao(group.athletes)
     ideal = [decisao[cat][0] for cat in _CATEGORIAS_RESPOSTA_CSV]
     dado = [decisao[cat][1] for cat in _CATEGORIAS_RESPOSTA_CSV]
     fig_barras = barras_agrupadas(

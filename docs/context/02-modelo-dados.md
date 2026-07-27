@@ -119,6 +119,13 @@ Pontos que o parser **precisa** tratar, confirmados olhando o arquivo real:
 - Terminação de linha é `CRLF` (arquivo de origem Windows) — não assumir `LF`.
 - `TempoReacao` pode vir como inteiro sem casas decimais (`16`) ou com casas decimais
   (`13.31`) — tratar ambos como float.
+- **`TempoReacao` pode vir com vírgula decimal** (`"13,31"`, entre aspas — a aspa
+  aparece porque a vírgula decimal colide com a vírgula separadora de campos do
+  CSV) em vez de ponto. Acontece quando o arquivo é reexportado/editado no Excel
+  com localidade PT-BR. Confirmado em 22/07/2026 com um arquivo real do cliente
+  que causava erro "nenhuma tentativa válida" — o parser tenta `float()` direto
+  primeiro e cai para trocar `,` por `.` antes de tentar de novo (ver
+  `io/csv_importer.py::_parse_tempo_reacao`).
 - Nesta amostra específica, não há linha vazia final — mas o parser deve continuar
   descartando linhas vazias/inválidas por segurança (não assumir que toda exportação
   futura virá limpa), conforme seção 7 do planejamento original.

@@ -96,6 +96,70 @@ Todas as pendências levantadas na atualização do CSV e do modelo de 4 página
 (16-18/07/2026) estão resolvidas — ver [07-pontos-em-aberto.md](07-pontos-em-aberto.md)
 para o registro completo de cada uma.
 
+## Ajustes visuais pós-implementação (21-22/07/2026)
+
+Depois do MVP implementado, o cliente testou com dados reais/`.exe` gerado e pediu
+ajustes de clareza visual — nenhum muda métrica de negócio, só como ela é
+desenhada:
+
+- "Acertos por decisão" → renomeado "Media de acertos por decisão"; valores agora
+  são média por atleta (total/atletas), não soma bruta do grupo.
+- Radar "Taxa de acerto por resposta": eixo com taxa 0% ganha uma bolinha central
+  (senão o vértice em r=0 fica invisível, parecendo "sem dado").
+- "Ações por pé": a imagem de referência do cliente (par de pés verde/vermelho,
+  `docs/reference/imagens/Chuteira.png`) substituiu o desenho vetorial de
+  "chuteiras" — copiada para `src/relatoriocognito/resources/par_de_pes.png`,
+  carregada via novo helper `relatoriocognito.paths.caminho_recurso` (resolve o
+  caminho tanto no código-fonte quanto no `.exe` empacotado).
+- "Acertos por posição": mesmo problema do radar, mas em barra — um valor real
+  igual a 0 (ex.: atleta com 0 acertos) ficava idêntico a "sem atleta na posição".
+  Ganhou o mesmo tratamento (bolinha na base). Também foi redesenhado (duas
+  iterações em 22/07/2026): o valor do próprio atleta (verde) só aparece na
+  posição dele, não mais repetido nas 6 categorias. A primeira iteração usava uma
+  3ª cor (cinza) para "outras posições" e um aviso de texto quando a posição do
+  atleta não tinha comparação — **o cliente pediu para simplificar**: só 2 cores
+  (preto = "Media da posição", em qualquer categoria com dado; verde = "Jogador",
+  só na posição do atleta) e sem texto de aviso — se não houver comparação, só a
+  barra verde aparece, sem substituto.
+- Linha "Media de acertos posição": sem nenhum outro atleta do grupo na mesma
+  posição, a linha de referência (antes achatada em 0%, parecendo dado real) vira
+  um aviso "Sem outro atleta para comparar" — esse aviso continua só nessa linha
+  (o cliente pediu para tirar o equivalente da barra "Acertos por posição", ver
+  acima).
+- `TempoReacao` com vírgula decimal (`"13,31"`, comum em CSV reexportado/editado
+  no Excel com localidade PT-BR) causava erro "nenhuma tentativa válida" — não
+  tem relação com o atleta ter ou não acertos. Parser agora aceita `.` ou `,`
+  como separador decimal — ver [02-modelo-dados.md](02-modelo-dados.md).
+
+## Refazimento de "Acertos por posição" (26/07/2026)
+
+O usuário pediu para refazer só esse gráfico da página "Comparação atleta grupo".
+Mudanças confirmadas ponto a ponto antes de implementar:
+
+- **A média da posição passa a incluir o próprio atleta.** Antes ela era calculada
+  só entre os *outros* atletas da posição, então quando o atleta era o único do
+  grupo naquela posição a barra de referência simplesmente não existia. Agora a
+  barra cinza aparece em toda posição com pelo menos um atleta carregado na
+  sessão. Consequência aceita pelo usuário: com um único atleta na posição, a
+  barra de média e a do atleta ficam idênticas por definição.
+- **Cor da série de média: preto → cinza neutro** (`CINZA_MEDIO`, `#A6A6A6`) —
+  reaproveita o cinza já usado nas linhas de referência dos outros dois gráficos
+  da mesma página, em vez de introduzir um tom novo.
+- **Legenda da série verde: "Jogador" → nome real do atleta**, como já acontece
+  nos gráficos de linha da mesma página.
+- **Mantido como estava:** as 6 categorias fixas no eixo X (posição sem atleta
+  continua sem barra e sem aviso), a barra verde só na posição do próprio atleta,
+  e a bolinha na base para distinguir valor real 0 de ausência de dado.
+- **Não mexer junto:** a linha "Media de acertos posição" continua *excluindo* o
+  próprio atleta e mantendo o aviso "Sem outro atleta para comparar" — ali a
+  comparação é "eu x os outros". São duas funções distintas em
+  `domain/metrics.py` (`trials_por_posicao` vs. `acertos_por_posicao`) e a
+  divergência é intencional.
+
+**Lembrete importante:** o `.exe` em `dist/` não se atualiza sozinho — é preciso
+rodar `scripts/build_exe.ps1` (ou o comando `pyinstaller` do `README.md`) depois
+de qualquer mudança de código para gerar um `.exe` novo.
+
 ## Como usar este documento
 
 Antes de tomar qualquer decisão técnica nova durante a implementação, checar aqui

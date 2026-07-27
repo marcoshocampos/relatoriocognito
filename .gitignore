@@ -10,7 +10,7 @@ __pycache__/
 # PyInstaller
 build/
 dist/
-*.spec.bak
+*.spec
 
 # Testes / cobertura
 .pytest_cache/

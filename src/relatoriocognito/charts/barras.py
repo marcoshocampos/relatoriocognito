@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from matplotlib.figure import Figure
+from matplotlib.patches import Patch
 
 from relatoriocognito.charts.util import fundo_transparente
 
@@ -46,6 +47,9 @@ def barras_agrupadas(
 
     `None` em `series` vira barra ausente (altura 0), sem travar o gráfico — usado
     para posições sem atleta no grupo (ver docs/context/07-pontos-em-aberto.md item 9).
+    Um valor real igual a 0 (ex.: atleta com 0 acertos) também vira barra de altura
+    0 — visualmente idêntica a `None` sem uma marca extra, então ganha uma bolinha
+    na base para diferenciar "tem dado, e é zero" de "não tem atleta nessa categoria".
     """
     fig = Figure(figsize=figsize)
     ax = fig.add_subplot(111)
@@ -60,11 +64,83 @@ def barras_agrupadas(
         alturas = [0 if v is None else v for v in valores]
         ax.bar(posicoes, alturas, width=largura, label=nome_serie, color=cores[nome_serie])
 
+        posicoes_zero = [p for p, v in zip(posicoes, valores) if v == 0]
+        if posicoes_zero:
+            ax.plot(
+                posicoes_zero, [0] * len(posicoes_zero),
+                marker="o", markersize=6, color=cores[nome_serie], linestyle="none",
+            )
+
     ax.set_xticks(list(posicoes_base))
     ax.set_xticklabels(categorias)
     if ylabel:
         ax.set_ylabel(ylabel)
     ax.legend()
+    ax.spines[["top", "right"]].set_visible(False)
+    _rotacionar_rotulos_se_necessario(ax, categorias)
+    fundo_transparente(fig, ax)
+    return fig
+
+
+def barras_posicao_atleta(
+    categorias: list[str],
+    medias_por_posicao: dict[str, float | None],
+    valor_atleta: float,
+    posicao_atleta: str,
+    nome_atleta: str,
+    *,
+    cor_media: str,
+    cor_atleta: str,
+    figsize: tuple[float, float] = (9.0, 3.6),
+    ylabel: str | None = None,
+) -> Figure:
+    """"Acertos por posição": média da posição (cinza) em todas as categorias com
+    dado; o valor do próprio atleta (verde) só aparece na posição dele, ao lado da
+    média daquela posição.
+
+    A média já inclui o próprio atleta (ver `domain.metrics.acertos_por_posicao`),
+    então na posição dele a barra cinza sempre existe — o `None` só sobra para
+    posição sem nenhum atleta no grupo, que não desenha barra nenhuma, e para o
+    caso de a posição do atleta não estar entre as `categorias` fixas. Um valor
+    real igual a 0 ganha uma bolinha na base (mesmo critério de
+    `barras_agrupadas`), para não parecer "sem dado".
+    """
+    fig = Figure(figsize=figsize)
+    ax = fig.add_subplot(111)
+    largura_par = 0.32
+    largura_solo = largura_par * 1.7
+    posicao_atleta_normalizada = posicao_atleta.strip().casefold()
+
+    def _marcar_zero_se_necessario(x: float, valor: float | None, cor: str) -> None:
+        if valor == 0:
+            ax.plot([x], [0], marker="o", markersize=6, color=cor, linestyle="none")
+
+    for i, categoria in enumerate(categorias):
+        media = medias_por_posicao.get(categoria)
+        # Comparação case-insensitive: o CSV real usa "Meio campista", já as 6
+        # categorias fixas usam "Meio Campista" (mesma cautela de domain/metrics.py).
+        if categoria.strip().casefold() == posicao_atleta_normalizada:
+            if media is not None:
+                x_media = i - largura_par / 2
+                ax.bar(x_media, media, width=largura_par, color=cor_media)
+                _marcar_zero_se_necessario(x_media, media, cor_media)
+            x_atleta = i + largura_par / 2
+            ax.bar(x_atleta, valor_atleta, width=largura_par, color=cor_atleta)
+            _marcar_zero_se_necessario(x_atleta, valor_atleta, cor_atleta)
+        elif media is not None:
+            ax.bar(i, media, width=largura_solo, color=cor_media)
+            _marcar_zero_se_necessario(i, media, cor_media)
+
+    ax.set_xticks(list(range(len(categorias))))
+    ax.set_xticklabels(categorias)
+    if ylabel:
+        ax.set_ylabel(ylabel)
+    ax.legend(
+        handles=[
+            Patch(color=cor_media, label="Media da posição"),
+            Patch(color=cor_atleta, label=nome_atleta),
+        ]
+    )
     ax.spines[["top", "right"]].set_visible(False)
     _rotacionar_rotulos_se_necessario(ax, categorias)
     fundo_transparente(fig, ax)

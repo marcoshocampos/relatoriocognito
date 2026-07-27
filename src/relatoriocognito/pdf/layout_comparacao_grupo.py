@@ -4,8 +4,8 @@ from pathlib import Path
 
 from reportlab.pdfgen.canvas import Canvas
 
-from relatoriocognito.charts.barras import barras_agrupadas
-from relatoriocognito.charts.colors import PRETO, VERDE
+from relatoriocognito.charts.barras import barras_posicao_atleta
+from relatoriocognito.charts.colors import CINZA_MEDIO, VERDE
 from relatoriocognito.charts.linha import grafico_linha_comparativa
 from relatoriocognito.domain import metrics
 from relatoriocognito.domain.models import Athlete, Group
@@ -68,11 +68,13 @@ def desenhar(
     cartao(c, x2, y_linha1, w2, altura_linha1)
     titulo_cartao(c, "Media de acertos posição", x2 + w2 / 2, y_linha1 + altura_linha1 - 20)
     trials_posicao = metrics.trials_por_posicao(group.athletes, atleta.posicao, excluir_atleta=atleta)
-    taxa_posicao = metrics.taxa_acerto_por_resposta(trials_posicao)
-    valores_posicao = [taxa_posicao[cat] for cat in _ORDEM_RESPOSTA]
+    serie_posicao = None
+    if trials_posicao:
+        taxa_posicao = metrics.taxa_acerto_por_resposta(trials_posicao)
+        serie_posicao = (atleta.posicao, [taxa_posicao[cat] for cat in _ORDEM_RESPOSTA])
     fig2 = grafico_linha_comparativa(
         list(_ROTULOS_RESPOSTA),
-        (atleta.posicao, valores_posicao),
+        serie_posicao,
         (atleta.nome, valores_atleta),
     )
     desenhar_figura(c, fig2, x2 + 10, y_linha1 + 10, w2 - 20, altura_linha1 - 40)
@@ -84,16 +86,16 @@ def desenhar(
     cartao(c, MARGEM, y_linha2, largura_total, altura_linha2)
     titulo_cartao(c, "Acertos por posição", MARGEM + largura_total / 2, y_linha2 + altura_linha2 - 20)
 
-    media_por_posicao = metrics.acertos_por_posicao(group.athletes, atleta)
+    media_por_posicao = metrics.acertos_por_posicao(group.athletes)
     acertos_atleta = metrics.contagem_acertos_erros(atleta.trials)["Acertou"]
-    posicoes = list(metrics.POSICOES)
-    fig3 = barras_agrupadas(
-        posicoes,
-        {
-            "Media da posição": [media_por_posicao[p] for p in posicoes],
-            "Jogador": [acertos_atleta for _ in posicoes],
-        },
-        {"Media da posição": PRETO, "Jogador": VERDE},
+    fig3 = barras_posicao_atleta(
+        list(metrics.POSICOES),
+        media_por_posicao,
+        acertos_atleta,
+        atleta.posicao,
+        atleta.nome,
+        cor_media=CINZA_MEDIO,
+        cor_atleta=VERDE,
         figsize=(9.0, 3.6),
     )
     desenhar_figura(c, fig3, MARGEM + 16, y_linha2 + 10, largura_total - 32, altura_linha2 - 40)

@@ -100,6 +100,17 @@ def _normalizar_colunas(df: pd.DataFrame, caminho: Path) -> pd.DataFrame:
     return df
 
 
+def _parse_tempo_reacao(valor: str) -> float:
+    """Aceita `.` ou `,` como separador decimal — CSVs reexportados/editados no
+    Excel com localidade PT-BR trocam o ponto por vírgula (ex.: `"13,31"`), o que
+    quebra `float()` direto."""
+    texto = valor.strip()
+    try:
+        return float(texto)
+    except ValueError:
+        return float(texto.replace(",", "."))
+
+
 def _linha_valida(row: pd.Series) -> bool:
     jogador = row.get("Jogador")
     if pd.isna(jogador) or not str(jogador).strip():
@@ -108,7 +119,7 @@ def _linha_valida(row: pd.Series) -> bool:
     if pd.isna(tempo_reacao):
         return False
     try:
-        float(str(tempo_reacao).strip())
+        _parse_tempo_reacao(str(tempo_reacao))
     except ValueError:
         return False
     return True
@@ -135,7 +146,7 @@ def _linha_para_trial(row: pd.Series) -> Trial:
         treino=_campo(row, "Treino"),
         pe_esperado=_campo(row, "PeEsperado"),
         pe_usado=_campo(row, "PeUsado"),
-        tempo_reacao=float(_campo(row, "TempoReacao")),
+        tempo_reacao=_parse_tempo_reacao(_campo(row, "TempoReacao")),
         classificacao_tr=_campo(row, "ClassificacaoTR"),
         correto=_campo(row, "Correto"),
         resposta_correta=_campo(row, "RespostaCorreta"),

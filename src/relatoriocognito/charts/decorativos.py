@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from matplotlib.patches import Circle, Ellipse, Wedge
+from matplotlib.patches import Circle, Wedge
 
-from relatoriocognito.charts.colors import VERDE, VERMELHO
 from relatoriocognito.charts.util import fundo_transparente
 
 _CINZA_AVATAR = "#9E9E9E"
@@ -16,26 +14,6 @@ def icone_avatar(*, figsize: tuple[float, float] = (1.0, 1.0), cor: str = _CINZA
     ax = fig.add_subplot(111)
     ax.add_patch(Circle((0.5, 0.62), 0.22, color=cor))
     ax.add_patch(Wedge((0.5, 0.14), 0.4, 0, 180, color=cor))
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
-    ax.set_aspect("equal")
-    ax.axis("off")
-    fundo_transparente(fig, ax)
-    return fig
-
-
-def _chuteira(ax: Axes, centro_x: float, cor: str, espelhado: bool) -> None:
-    sinal = -1 if espelhado else 1
-    ax.add_patch(Ellipse((centro_x, 0.38), 0.22, 0.16, angle=sinal * 20, color=cor))
-    ax.add_patch(Circle((centro_x + sinal * 0.09, 0.48), 0.075, color=cor))
-
-
-def par_de_chuteiras(*, figsize: tuple[float, float] = (2.4, 1.2)) -> Figure:
-    """Par decorativo de chuteiras (esquerda verde, direita vermelha) — só ilustrativo."""
-    fig = Figure(figsize=figsize)
-    ax = fig.add_subplot(111)
-    _chuteira(ax, centro_x=0.22, cor=VERDE, espelhado=False)
-    _chuteira(ax, centro_x=0.78, cor=VERMELHO, espelhado=True)
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.set_aspect("equal")

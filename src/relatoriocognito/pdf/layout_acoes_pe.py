@@ -6,10 +6,10 @@ from reportlab.pdfgen.canvas import Canvas
 
 from relatoriocognito.charts.barras import barras_empilhadas_horizontais, barras_simples
 from relatoriocognito.charts.colors import VERDE, VERMELHO
-from relatoriocognito.charts.decorativos import par_de_chuteiras
 from relatoriocognito.charts.pizza import grafico_pizza
 from relatoriocognito.domain import metrics
 from relatoriocognito.domain.models import Athlete, Group
+from relatoriocognito.paths import caminho_recurso
 from relatoriocognito.pdf.layout_helpers import (
     GAP,
     MARGEM,
@@ -59,9 +59,18 @@ def desenhar(
     )
     desenhar_figura(c, fig_pizza, x1 + 10, y_linha1 + 10, w1 - 20, altura_linha1 - 40)
 
-    # Card 2: par de chuteiras (decorativo)
+    # Card 2: imagem de par de pés (decorativo)
     cartao(c, x2, y_linha1, w2, altura_linha1)
-    desenhar_figura(c, par_de_chuteiras(), x2 + 15, y_linha1 + 40, w2 - 30, altura_linha1 - 80)
+    c.drawImage(
+        str(caminho_recurso("par_de_pes.png")),
+        x2 + 15,
+        y_linha1 + 40,
+        width=w2 - 30,
+        height=altura_linha1 - 80,
+        preserveAspectRatio=True,
+        anchor="c",
+        mask="auto",
+    )
 
     # Card 3: Media de TR por pé
     cartao(c, x3, y_linha1, w3, altura_linha1)

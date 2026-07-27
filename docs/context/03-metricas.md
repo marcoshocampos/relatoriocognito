@@ -21,12 +21,15 @@ Agregando todos os CSVs (atletas) selecionados para o relatório:
   tentativas do grupo.
 - **Tempo médio de reação do grupo** — média de `TempoReacao` sobre todas as
   tentativas de todos os atletas do grupo (não é média das médias por atleta).
-- **Comparativo "Acertos por decisão"** — duas contagens por categoria de resposta
-  (`Chutar ao Gol`, `Manter Posse`, `Passe a Esquerda`, `Passe a Direita`), lado a
-  lado: contagem de tentativas com aquela categoria em `RespostaCorreta` (série
-  "Ideal" — o que deveria ter sido feito) x contagem de tentativas com aquela
-  categoria em `RespostaDada` (série com o nome do grupo — o que foi efetivamente
-  feito). Confirmado com o cliente em 18/07/2026, ver
+- **"Media de acertos por decisão"** (título atualizado em 21/07/2026; antes
+  "Acertos por decisão") — duas médias por categoria de resposta (`Chutar ao Gol`,
+  `Manter Posse`, `Passe a Esquerda`, `Passe a Direita`), lado a lado: contagem de
+  tentativas com aquela categoria em `RespostaCorreta` (série "Ideal" — o que
+  deveria ter sido feito) e em `RespostaDada` (série com o nome do grupo — o que foi
+  efetivamente feito), **cada uma dividida pelo número de atletas do grupo**
+  (total/atletas, mesma convenção de "Acertos por posição" — ver item 14 de
+  [07-pontos-em-aberto.md](07-pontos-em-aberto.md)), não a soma bruta. Fonte das
+  categorias confirmada com o cliente em 18/07/2026, ver
   [07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 3.
 - **Indicador de tentativas x acertos x média do grupo** — total de tentativas do
   grupo, total de acertos, e a média usada como referência de comparação
@@ -79,22 +82,41 @@ Também por atleta, com dois eixos de comparação:
 - **Taxa de acerto por resposta: atleta x média da posição** — mesma métrica, mas
   comparando o atleta contra a média de **outros atletas do relatório que jogam na
   mesma posição** (`Meio campista`, no exemplo), em vez da média geral do grupo.
+  **Ajustado em 22/07/2026:** quando não existe nenhum outro atleta do grupo na
+  mesma posição, o gráfico não desenha mais uma linha cinza achatada em 0% (que
+  parecia um dado real de "0% de acerto") — em vez disso, mostra só a linha do
+  atleta e um aviso "Sem outro atleta para comparar" no lugar da linha de
+  referência.
 - **Acertos por posição** — gráfico de barras com 6 categorias fixas de posição
   (`Zagueiro`, `Meio Campista`, `Atacante`, `Volante`, `Lateral Direito`,
-  `Lateral Esquerdo`), comparando `Media da posição` (uma barra por posição) contra
-  o valor do `Jogador` (atleta atual). **Resolvido (19/07/2026, ver
-  [07-pontos-em-aberto.md](07-pontos-em-aberto.md) item 14):** ambos os valores são
-  contagem bruta de tentativas `Correto=Acertou` (não porcentagem) — `Media da
-  posição` é a média dessa contagem entre os atletas do grupo que jogam naquela
-  posição; o valor do `Jogador` é a contagem de acertos do próprio atleta,
-  constante e repetida como referência nas 6 categorias.
+  `Lateral Esquerdo`). Valores em contagem bruta de tentativas `Correto=Acertou`
+  (não porcentagem) — **Resolvido (19/07/2026, ver
+  [07-pontos-em-aberto.md](07-pontos-em-aberto.md) item 14).** Duas séries:
+  `Media da posição` (cinza neutro) e o **nome do atleta** (verde).
+  - `Media da posição` = média da contagem de acertos entre **todos** os atletas
+    carregados na sessão naquela posição, **incluindo o próprio atleta do
+    relatório**. Aparece em qualquer categoria que tenha pelo menos um atleta
+    carregado. Posição sem nenhum atleta no grupo continua sem barra nenhuma.
+  - A série do atleta = contagem de acertos dele, desenhada **só** na categoria
+    correspondente à posição dele, pareada com a barra cinza daquela posição.
+
+  **Ajustado em 26/07/2026:** a média deixou de excluir o próprio atleta. Antes,
+  quando ele era o único do grupo naquela posição, a barra de referência sumia e
+  só sobrava a barra verde; agora a barra de média existe sempre que a posição
+  tem dado. Consequência esperada e aceita pelo usuário: com um único atleta na
+  posição, as duas barras ficam iguais por definição.
 
 A "média da posição" usada nesses três gráficos é calculada **só entre os atletas
 selecionados no relatório atual** (mesmo grupo da sessão) — confirmado com o
 usuário, sem depender de histórico entre relatórios (mantém
-[06-decisoes.md](06-decisoes.md)). Se o grupo não tiver atleta em alguma das 6
-posições, essa posição fica sem dado no gráfico "Acertos por posição" — não travar a
-geração do relatório por causa disso.
+[06-decisoes.md](06-decisoes.md)). Atenção a uma diferença deliberada entre os
+gráficos: a linha "Media de acertos posição" **exclui** o próprio atleta (a
+comparação ali é "eu x os outros", daí o aviso "Sem outro atleta para comparar"),
+enquanto a barra "Acertos por posição" **inclui** todos. São funções separadas em
+`domain/metrics.py` (`trials_por_posicao` vs. `acertos_por_posicao`) — não
+unificar. Se o grupo não tiver atleta em alguma das 6 posições, essa posição fica
+sem dado no gráfico "Acertos por posição" — não travar a geração do relatório por
+causa disso.
 
 ## Pendência de interpretação: "tempo médio separado" (acertos x erros)
 

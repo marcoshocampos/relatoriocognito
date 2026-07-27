@@ -29,6 +29,13 @@ def grafico_radar(
     ax.plot(angulos_fechado, dados_fechado, color=cor, linewidth=2)
     ax.fill(angulos_fechado, dados_fechado, color=cor, alpha=0.3)
 
+    # Em r=0 o vértice fica invisível (todos os ângulos colapsam no centro) — sem
+    # isso, um eixo com taxa=0 parece "sem dado" em vez de "0%". Uma bolinha no
+    # centro para cada eixo zerado deixa isso visível.
+    angulos_zero = [ang for ang, val in zip(angulos, dados) if val == 0]
+    if angulos_zero:
+        ax.plot(angulos_zero, [0] * len(angulos_zero), marker="o", markersize=6, color=cor, linestyle="none")
+
     ax.set_xticks(angulos)
     ax.set_xticklabels(categorias)
     ax.set_ylim(0, 100)

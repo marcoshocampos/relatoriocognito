@@ -37,11 +37,13 @@ Blocos de conteúdo:
   (vermelho). (Nota: o rótulo visível é **"No tempo"**, equivalente a `Ideal` no CSV
   — ver [02-modelo-dados.md](02-modelo-dados.md).)
 - **Media do TR** — valor único em destaque (ex.: "2,6 s").
-- **Acertos por decisão** — gráfico de barras com duas séries, nas categorias
-  "Chute", "Passe Esq", "Passe Dir", "Manutenção":
-  - **"Atletico"** (preto, nome do grupo) = contagem de `RespostaDada` por
+- **"Media de acertos por decisão"** (renomeado em 21/07/2026; antes "Acertos por
+  decisão") — gráfico de barras com duas séries, nas categorias "Chute", "Passe
+  Esq", "Passe Dir", "Manutenção", **cada valor dividido pelo número de atletas do
+  grupo** (média por atleta, não soma bruta):
+  - **"Atletico"** (preto, nome do grupo) = média de `RespostaDada` por
     categoria — o que o atleta/time efetivamente fez.
-  - **"Ideal"** (verde) = contagem de `RespostaCorreta` por categoria — o que
+  - **"Ideal"** (verde) = média de `RespostaCorreta` por categoria — o que
     deveria ter sido feito. Confirmado com o cliente (18/07/2026) — ver
     [07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 3.
 
@@ -108,13 +110,21 @@ Blocos de conteúdo:
   da página 2 (radar), exibida como linha aqui — confirmado com o usuário
   (17/07/2026) que as duas visualizações são intencionais, não uma duplicação a
   remover — ver [07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 11.
-- **Media de acertos posição** — mesmo formato de linha, mas comparando "Meio
-  campista" (média da posição do atleta, cinza) x "Nome Atleta" (verde).
-- **Acertos por posição** — barras comparando "Media da posição" (preto) x
-  "Jogador" (verde) nas 6 posições: Zagueiro, Meio Campista, Atacante, Volante,
-  Lateral Direito, Lateral Esquerdo. Confirmado (17/07/2026) que "média da posição"
-  é calculada só entre os atletas do relatório atual — se o grupo não tiver atleta
-  em alguma posição, essa posição fica sem dado (não travar a geração do PDF). Ver
+- **Media de acertos posição** — mesmo formato de linha, mas comparando a posição
+  do atleta (média dos outros atletas do grupo naquela posição, cinza) x "Nome
+  Atleta" (verde). Se não houver nenhum outro atleta do grupo na mesma posição, a
+  linha cinza é substituída por um aviso "Sem outro atleta para comparar" (ajuste
+  de 22/07/2026 — uma linha cinza achatada em 0% parecia um dado real, não
+  ausência de comparação).
+- **Acertos por posição** — barras nas 6 posições: Zagueiro, Meio Campista,
+  Atacante, Volante, Lateral Direito, Lateral Esquerdo. Confirmado (17/07/2026) que
+  "média da posição" é calculada só entre os atletas do relatório atual — se o
+  grupo não tiver atleta em alguma posição, essa posição fica sem barra nenhuma.
+  **Refeito em 26/07/2026:** 2 séries — "Media da posição" (cinza neutro
+  `#A6A6A6`, o mesmo das linhas de referência desta página) e o **nome do atleta**
+  (verde). A barra cinza aparece em toda categoria com pelo menos um atleta
+  carregado na sessão, e a média **inclui o próprio atleta**; a barra verde
+  aparece só na posição dele, ao lado da cinza daquela posição. Ver
   [06-decisoes.md](06-decisoes.md).
 
 ## Observações gerais
