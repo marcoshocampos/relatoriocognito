@@ -22,6 +22,21 @@ Todas as páginas trazem, no canto superior direito, um selo hexagonal com o tex
 gerado pelo sistema, independente do cliente — ver
 [07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 12.
 
+Todas as páginas também trazem, no rodapé, "Relatório emitido em dd/mm/aaaa"
+(adicionado 03/08/2026) — não confundir com a data do cabeçalho, que vem do CSV
+(data da sessão de coleta).
+
+**A cor verde do modelo Canva deixou de ser fixa (03/08/2026).** O que este
+documento descreve como "verde" nos gráficos que representam o time/atleta
+(pizza/rosca de acertos, série de destaque em "Acertos por decisão" e "Acertos
+por posição", gauge, radar, badges da página individual) é hoje a **cor base
+escolhida pelo usuário** na tela 1 do wizard — o verde é só o valor padrão para
+quem não escolher outra. Vermelho/amarelo/laranja (erro/precoce/tardio) e o
+cinza de referência (média do grupo/posição) continuam fixos, sem relação com a
+cor escolhida — ver [06-decisoes.md](06-decisoes.md) para o detalhamento
+completo. O fundo cinza-claro dos cartões também passou a ser derivado da cor
+base (a mesma cor bem clareada), no lugar do cinza fixo `#E4E4E4` original.
+
 ## Página 1 — Dashboard de grupo ("Dashboard Overview")
 
 Imagem: [`dashboard_overview.png`](../reference/modelo-canva/dashboard_overview.png)

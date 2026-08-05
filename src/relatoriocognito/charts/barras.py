@@ -3,7 +3,15 @@ from __future__ import annotations
 from matplotlib.figure import Figure
 from matplotlib.patches import Patch
 
-from relatoriocognito.charts.util import fundo_transparente
+from relatoriocognito.charts.colors import CINZA_MEDIO, GRAFITE, cor_texto_sobre
+from relatoriocognito.charts.estilo import (
+    FAMILIA_FONTE,
+    TAMANHO_VALOR,
+    estilo_cartesiano,
+    fundo_transparente,
+    legenda_topo,
+    rotular_barras_verticais,
+)
 
 
 def _rotacionar_rotulos_se_necessario(ax, categorias: list[str]) -> None:
@@ -22,16 +30,17 @@ def barras_simples(
     *,
     figsize: tuple[float, float] = (4.0, 3.2),
     ylabel: str | None = None,
+    formato_valor: str = "{:.1f}",
 ) -> Figure:
     """Uma barra por categoria, cada uma com sua própria cor (ex.: Media de TR por pé)."""
     fig = Figure(figsize=figsize)
     ax = fig.add_subplot(111)
-    ax.bar(categorias, valores, color=cores)
+    barras = ax.bar(categorias, valores, color=cores, width=0.55)
+    rotular_barras_verticais(ax, barras, formato=formato_valor)
     if ylabel:
         ax.set_ylabel(ylabel)
-    ax.spines[["top", "right"]].set_visible(False)
+    estilo_cartesiano(fig, ax)
     _rotacionar_rotulos_se_necessario(ax, categorias)
-    fundo_transparente(fig, ax)
     return fig
 
 
@@ -43,7 +52,7 @@ def barras_agrupadas(
     figsize: tuple[float, float] = (6.0, 4.0),
     ylabel: str | None = None,
 ) -> Figure:
-    """Barras verticais agrupadas por categoria (ex.: Acertos por decisão, por posição).
+    """Barras verticais agrupadas por categoria (ex.: Media de acertos por decisão).
 
     `None` em `series` vira barra ausente (altura 0), sem travar o gráfico — usado
     para posições sem atleta no grupo (ver docs/context/07-pontos-em-aberto.md item 9).
@@ -55,30 +64,30 @@ def barras_agrupadas(
     ax = fig.add_subplot(111)
 
     n_series = len(series)
-    largura = 0.8 / max(n_series, 1)
+    largura = 0.7 / max(n_series, 1)
     posicoes_base = range(len(categorias))
 
     for i, (nome_serie, valores) in enumerate(series.items()):
         offset = (i - (n_series - 1) / 2) * largura
         posicoes = [p + offset for p in posicoes_base]
         alturas = [0 if v is None else v for v in valores]
-        ax.bar(posicoes, alturas, width=largura, label=nome_serie, color=cores[nome_serie])
+        barras = ax.bar(posicoes, alturas, width=largura, label=nome_serie, color=cores[nome_serie])
+        rotular_barras_verticais(ax, barras)
 
         posicoes_zero = [p for p, v in zip(posicoes, valores) if v == 0]
         if posicoes_zero:
             ax.plot(
                 posicoes_zero, [0] * len(posicoes_zero),
-                marker="o", markersize=6, color=cores[nome_serie], linestyle="none",
+                marker="o", markersize=5, color=cores[nome_serie], linestyle="none",
             )
 
     ax.set_xticks(list(posicoes_base))
     ax.set_xticklabels(categorias)
     if ylabel:
         ax.set_ylabel(ylabel)
-    ax.legend()
-    ax.spines[["top", "right"]].set_visible(False)
+    estilo_cartesiano(fig, ax)
+    legenda_topo(ax)
     _rotacionar_rotulos_se_necessario(ax, categorias)
-    fundo_transparente(fig, ax)
     return fig
 
 
@@ -89,14 +98,14 @@ def barras_posicao_atleta(
     posicao_atleta: str,
     nome_atleta: str,
     *,
-    cor_media: str,
+    cor_media: str = CINZA_MEDIO,
     cor_atleta: str,
     figsize: tuple[float, float] = (9.0, 3.6),
     ylabel: str | None = None,
 ) -> Figure:
-    """"Acertos por posição": média da posição (cinza) em todas as categorias com
-    dado; o valor do próprio atleta (verde) só aparece na posição dele, ao lado da
-    média daquela posição.
+    """"Acertos por posição": média da posição (cinza neutro) em todas as categorias
+    com dado; o valor do próprio atleta (cor base do relatório) só aparece na
+    posição dele, ao lado da média daquela posição.
 
     A média já inclui o próprio atleta (ver `domain.metrics.acertos_por_posicao`),
     então na posição dele a barra cinza sempre existe — o `None` só sobra para
@@ -107,13 +116,15 @@ def barras_posicao_atleta(
     """
     fig = Figure(figsize=figsize)
     ax = fig.add_subplot(111)
-    largura_par = 0.32
+    largura_par = 0.30
     largura_solo = largura_par * 1.7
     posicao_atleta_normalizada = posicao_atleta.strip().casefold()
 
-    def _marcar_zero_se_necessario(x: float, valor: float | None, cor: str) -> None:
+    def _desenhar(x: float, valor: float, largura: float, cor: str) -> None:
+        barras = ax.bar(x, valor, width=largura, color=cor)
+        rotular_barras_verticais(ax, barras)
         if valor == 0:
-            ax.plot([x], [0], marker="o", markersize=6, color=cor, linestyle="none")
+            ax.plot([x], [0], marker="o", markersize=5, color=cor, linestyle="none")
 
     for i, categoria in enumerate(categorias):
         media = medias_por_posicao.get(categoria)
@@ -121,29 +132,24 @@ def barras_posicao_atleta(
         # categorias fixas usam "Meio Campista" (mesma cautela de domain/metrics.py).
         if categoria.strip().casefold() == posicao_atleta_normalizada:
             if media is not None:
-                x_media = i - largura_par / 2
-                ax.bar(x_media, media, width=largura_par, color=cor_media)
-                _marcar_zero_se_necessario(x_media, media, cor_media)
-            x_atleta = i + largura_par / 2
-            ax.bar(x_atleta, valor_atleta, width=largura_par, color=cor_atleta)
-            _marcar_zero_se_necessario(x_atleta, valor_atleta, cor_atleta)
+                _desenhar(i - largura_par / 2, media, largura_par, cor_media)
+            _desenhar(i + largura_par / 2, valor_atleta, largura_par, cor_atleta)
         elif media is not None:
-            ax.bar(i, media, width=largura_solo, color=cor_media)
-            _marcar_zero_se_necessario(i, media, cor_media)
+            _desenhar(i, media, largura_solo, cor_media)
 
     ax.set_xticks(list(range(len(categorias))))
     ax.set_xticklabels(categorias)
     if ylabel:
         ax.set_ylabel(ylabel)
-    ax.legend(
+    estilo_cartesiano(fig, ax)
+    legenda_topo(
+        ax,
         handles=[
             Patch(color=cor_media, label="Media da posição"),
             Patch(color=cor_atleta, label=nome_atleta),
-        ]
+        ],
     )
-    ax.spines[["top", "right"]].set_visible(False)
     _rotacionar_rotulos_se_necessario(ax, categorias)
-    fundo_transparente(fig, ax)
     return fig
 
 
@@ -168,7 +174,8 @@ def barras_empilhadas_horizontais(
 
     for nome_segmento, valores in segmentos.items():
         barras = ax.barh(
-            posicoes_y, valores, left=acumulado, color=cores[nome_segmento], label=nome_segmento
+            posicoes_y, valores, left=acumulado, color=cores[nome_segmento],
+            label=nome_segmento, height=0.55,
         )
         for barra, valor in zip(barras, valores):
             if valor:
@@ -178,13 +185,20 @@ def barras_empilhadas_horizontais(
                     str(int(valor)),
                     ha="center",
                     va="center",
+                    fontsize=TAMANHO_VALOR,
+                    fontfamily=FAMILIA_FONTE,
+                    color=cor_texto_sobre(cores[nome_segmento]),
                 )
         acumulado = [a + v for a, v in zip(acumulado, valores)]
 
     ax.set_yticks(posicoes_y)
     ax.set_yticklabels(categorias)
     ax.invert_yaxis()
-    ax.legend()
-    ax.spines[["top", "right"]].set_visible(False)
+    ax.spines[["top", "right", "left", "bottom"]].set_visible(False)
+    ax.tick_params(axis="both", length=0, labelsize=10, colors=GRAFITE, pad=6)
+    ax.set_xticks([])
+    for rotulo in ax.get_yticklabels():
+        rotulo.set_fontfamily(FAMILIA_FONTE)
+    legenda_topo(ax)
     fundo_transparente(fig, ax)
     return fig

@@ -156,6 +156,69 @@ Mudanças confirmadas ponto a ponto antes de implementar:
   `domain/metrics.py` (`trials_por_posicao` vs. `acertos_por_posicao`) e a
   divergência é intencional.
 
+## Cor base configurável, rodapé de emissão e restyle geral (03/08/2026)
+
+Pedido do usuário: times que recebem o relatório reclamam quando a cor exibida
+é a de um rival. Três mudanças implementadas juntas nessa rodada:
+
+- **Cor base escolhida pelo usuário na tela 1 do wizard** (`gui/tela_grupo.py`),
+  com seletor nativo (`tkinter.colorchooser`) e amostra visual. Guardada em
+  `JanelaPrincipal.cor_base` (default = verde do modelo Canva, `COR_BASE_PADRAO`
+  em `charts/colors.py`, para quem não mexer no seletor ter o resultado de
+  sempre). `tela_gerar.py` monta um `charts.colors.Paleta(base=cor_base)` e
+  repassa para `gerar_relatorio_pdf`, que propaga a mesma instância para as 4
+  funções de layout em `pdf/`.
+  - **O que responde à cor base:** tudo que representa o time/atleta/dado real —
+    a série de destaque nos gráficos de "Acertos por decisão" e "Acertos por
+    posição", a linha do atleta nos gráficos de comparação, o gauge de taxa de
+    acerto, o radar, a fatia "Acertou" das pizzas, os badges de valor da página
+    individual — e o fundo dos cartões (a cor base misturada com branco, ver
+    abaixo).
+  - **O que NÃO responde — permanece fixo:** vermelho/amarelo/laranja
+    (`VERMELHO`/`AMARELO`/`LARANJA` em `charts/colors.py`) continuam com
+    significado semântico fixo (erro, precoce, tardio) — derivá-los da cor base
+    quebraria a leitura desses gráficos. O cinza de referência (`CINZA_MEDIO`,
+    usado em "Media Grupo"/"Media da posição") também é fixo — ele existe
+    justamente para servir de pano de fundo neutro ao dado real. O selo
+    "Cognito" também não muda de cor — é branding do produto, não do time (ver
+    item 12 de [07-pontos-em-aberto.md](07-pontos-em-aberto.md)).
+  - **Fundo dos cartões:** pedido do usuário foi "a mesma cor com alpha de 20%
+    ou menos". Implementado como mistura sólida com branco (`misturar_com_branco`
+    em `charts/colors.py`), não transparência real — PDF não garante suporte de
+    alpha entre leitores/impressão, e a cor pré-misturada dá o mesmo resultado
+    visual em qualquer lugar. Intensidade: 12% nos cartões normais, 20% no
+    cartão de destaque que antes era lavanda fixa (`COR_CARTAO_LAVANDA`,
+    removida).
+  - **Contraste de texto:** como a cor base agora é livre (pode ser bem clara ou
+    bem escura), os badges de valor (página individual) calculam a cor do texto
+    em cima da cor de fundo (`cor_texto_sobre`, luminância relativa WCAG) em vez
+    de usar preto fixo — evita texto ilegível com cores escuras (ex.: azul-marinho).
+- **Rodapé "Relatório emitido em dd/mm/aaaa"** em todas as 4 páginas
+  (`layout_helpers.rodape`). Usa `datetime.date.today()` calculada **uma única
+  vez** por PDF gerado (em `pdf/report.py`, repassada como `data_emissao` para
+  as 4 funções de layout) — evita que um relatório que atravesse a meia-noite
+  durante a geração mostre datas diferentes em páginas diferentes. Não confundir
+  com a data que já existia no cabeçalho (`data`), que vem do CSV (data da
+  sessão de coleta) — são conceitualmente diferentes (emissão do relatório vs.
+  data da coleta) e ambas aparecem no PDF.
+- **Restyle geral dos gráficos** (`charts/estilo.py`, novo módulo): legendas
+  horizontais no topo (sem moldura), grid horizontal leve, remoção das bordas
+  superior/direita dos eixos, rótulos de valor nas barras, fonte única
+  (Arial/Helvetica) consistente com o texto desenhado pelo reportlab. Objetivo:
+  aproximar o visual do modelo Canva de referência, que não tem bordas de eixo
+  nem grid pesado.
+- **Hierarquia visual — alturas dos cartões recalculadas.** As páginas
+  "Dashboard Overview" e "Ações por pé" deixavam cerca de 1/3 da altura da
+  página em branco abaixo dos cartões (alturas antigas dimensionadas para um
+  conteúdo menor, nunca reajustadas). Alturas aumentadas para preencher o
+  espaço vertical disponível, com a mesma folga acima do rodapé nas 4 páginas
+  (~38pt). Gráficos com aspecto circular/polar (pizza, rosca, gauge, radar) não
+  ficam maiores com isso — o `bbox_inches="tight"` do matplotlib sempre corta
+  para o formato natural do conteúdo — então o ganho ali é o cartão colorido
+  preencher mais a página, não o desenho em si crescer. Gráficos cartesianos
+  (barra, linha) recebem `figsize` ajustado nos cartões que mudaram de
+  proporção de forma mais acentuada.
+
 **Lembrete importante:** o `.exe` em `dist/` não se atualiza sozinho — é preciso
 rodar `scripts/build_exe.ps1` (ou o comando `pyinstaller` do `README.md`) depois
 de qualquer mudança de código para gerar um `.exe` novo.

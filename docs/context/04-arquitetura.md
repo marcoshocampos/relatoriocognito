@@ -11,14 +11,19 @@ independente — não há persistência entre gerações de relatório.
 ## Fluxo
 
 ```
-[Tela: nome do grupo + logo]
+[Tela: nome do grupo + logo + cor base do time]
      → [Tela: selecionar CSVs dos atletas]
      → [Leitura e validação dos CSVs]
      → [Cálculo das métricas (grupo, por atleta, por atleta x posição)]
-     → [Geração dos gráficos]
+     → [Geração dos gráficos, usando a cor base escolhida]
      → [Montagem do PDF (1 página de grupo + 3 páginas por atleta selecionado)]
      → [Salvar arquivo .pdf]
 ```
+
+A cor base (`charts.colors.Paleta`, ver [06-decisoes.md](06-decisoes.md)) é
+escolhida na primeira tela e atravessa todas as camadas até `pdf/` e `charts/`
+como um parâmetro explícito (`paleta: Paleta`) — não é estado global nem
+configuração salva em disco, existe só durante a geração daquele relatório.
 
 O PDF final tem, por relatório: 1 página de grupo ("Dashboard Overview") +, para
 cada atleta selecionado, 3 páginas ("Dashboard individual", "Ações por pé",
@@ -48,15 +53,20 @@ de CSV real, matplotlib ou GUI:
   ([05-modelo-visual-referencia.md](05-modelo-visual-referencia.md)). O radar
   (página individual) e a linha (página de comparação) são componentes de gráfico
   distintos, mesmo representando a métrica "taxa de acerto por resposta" — ver
-  [07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 11.
+  [07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 11. `colors.py` define a
+  `Paleta` (cor base escolhida pelo usuário + cores fixas semânticas/neutras) e
+  `estilo.py` centraliza os ajustes visuais comuns a todos os gráficos (legenda,
+  grid, fonte) — ver [06-decisoes.md](06-decisoes.md).
 - **`pdf/`** — montagem do PDF final com reportlab: página de grupo + as 3 páginas
-  por atleta, usando os gráficos gerados. Provavelmente um módulo de layout por tipo
-  de página (ex.: `layout_grupo.py`, `layout_individual.py`, `layout_acoes_pe.py`,
-  `layout_comparacao_grupo.py`) para manter cada página isolada e fácil de ajustar
-  visualmente sem afetar as outras.
-- **`gui/`** — telas em CustomTkinter: (1) nome do grupo + logo, (2) seleção dos
-  CSVs dos atletas, (3) gerar relatório / salvar PDF. `gui/` só orquestra chamadas
-  para `domain/`, `io/`, `charts/` e `pdf/` — não deve conter lógica de cálculo.
+  por atleta, usando os gráficos gerados. Um módulo de layout por tipo de página
+  (`layout_grupo.py`, `layout_individual.py`, `layout_acoes_pe.py`,
+  `layout_comparacao_grupo.py`) mantém cada página isolada e fácil de ajustar
+  visualmente sem afetar as outras; `layout_helpers.py` reúne o que é comum às 4
+  (cabeçalho, cartão, rodapé com a data de emissão).
+- **`gui/`** — telas em CustomTkinter: (1) nome do grupo + logo + cor base do
+  time, (2) seleção dos CSVs dos atletas, (3) gerar relatório / salvar PDF.
+  `gui/` só orquestra chamadas para `domain/`, `io/`, `charts/` e `pdf/` — não
+  deve conter lógica de cálculo.
 - **`resources/`** — assets estáticos embutidos no `.exe` (ex.: fontes, ícone do
   app). Não confundir com `docs/reference/` (material de referência para
   desenvolvimento, não embutido no executável).

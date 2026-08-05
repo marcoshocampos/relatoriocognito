@@ -6,7 +6,7 @@ from reportlab.lib.colors import HexColor
 from reportlab.pdfgen.canvas import Canvas
 
 from relatoriocognito.charts.barras import barras_empilhadas_horizontais
-from relatoriocognito.charts.colors import AMARELO, VERDE, VERMELHO
+from relatoriocognito.charts.colors import AMARELO, Paleta, VERMELHO, cor_texto_sobre
 from relatoriocognito.charts.gauge import grafico_gauge
 from relatoriocognito.charts.radar import grafico_radar
 from relatoriocognito.domain import metrics
@@ -19,6 +19,7 @@ from relatoriocognito.pdf.layout_helpers import (
     cartao,
     desenhar_figura,
     distribuir_colunas,
+    rodape,
     titulo_cartao,
 )
 
@@ -26,11 +27,14 @@ _ORDEM_RADAR = ("Chutar ao Gol", "Passe a Direita", "Manter Posse", "Passe a Esq
 _ROTULOS_RADAR = ("Chute", "Passe Dir", "Manutenção", "Passe Esq")
 
 
-def _badge_valor(c: Canvas, x: float, y: float, w: float, h: float, cor: HexColor, texto: str) -> None:
-    cartao(c, x, y, w, h, cor=cor, raio=6)
+def _badge_valor(c: Canvas, x: float, y: float, w: float, h: float, cor: str, texto: str) -> None:
+    cartao(c, x, y, w, h, cor=HexColor(cor), raio=6)
     c.saveState()
     c.setFont("Helvetica-Bold", 12)
-    c.setFillColor(COR_TEXTO)
+    # A cor do badge agora pode ser a cor base escolhida pelo usuário — que tanto
+    # pode ser bem clara (precisa de texto escuro) quanto bem escura (precisa de
+    # texto branco). COR_TEXTO fixo (escuro) deixava de funcionar nesse segundo caso.
+    c.setFillColor(HexColor(cor_texto_sobre(cor)))
     c.drawCentredString(x + w / 2, y + h / 2 - 4, texto)
     c.restoreState()
 
@@ -44,6 +48,8 @@ def desenhar(
     *,
     largura_pagina: float,
     altura_pagina: float,
+    paleta: Paleta = Paleta(),
+    data_emissao: str | None = None,
 ) -> None:
     y_conteudo = cabecalho(
         c,
@@ -54,22 +60,23 @@ def desenhar(
         data=data,
         caminho_logo=caminho_logo,
         atleta=atleta,
+        paleta=paleta,
     )
 
     colunas = distribuir_colunas(MARGEM, largura_pagina - 2 * MARGEM, pesos=[1.0, 1.2, 1.0])
     (x1, w1), (x2, w2), (x3, w3) = colunas
 
-    altura_linha1 = 190
+    altura_linha1 = 200
     y_linha1 = y_conteudo - altura_linha1
 
     # Card 1: Tentativas / Acertos / Media do grupo
-    cartao(c, x1, y_linha1, w1, altura_linha1)
+    cartao(c, x1, y_linha1, w1, altura_linha1, cor=HexColor(paleta.fundo_cartao))
     tentativas = len(atleta.trials)
     acertos = metrics.contagem_acertos_erros(atleta.trials)["Acertou"]
     media_grupo = metrics.media_acertos_por_atleta(group.athletes)
-    _rotulo_e_badge(c, x1, y_linha1, w1, altura_linha1, "Tentativas:", str(tentativas), HexColor("#BDBDBD"))
+    _rotulo_e_badge(c, x1, y_linha1, w1, altura_linha1, "Tentativas:", str(tentativas), "#BDBDBD")
     _rotulo_e_badge(
-        c, x1, y_linha1, w1, altura_linha1, "Acertos", str(acertos), VERDE, deslocamento=1
+        c, x1, y_linha1, w1, altura_linha1, "Acertos", str(acertos), paleta.destaque, deslocamento=1
     )
     _rotulo_e_badge(
         c,
@@ -84,29 +91,31 @@ def desenhar(
     )
 
     # Card 2: Taxa de acerto (gauge)
-    cartao(c, x2, y_linha1, w2, altura_linha1)
+    cartao(c, x2, y_linha1, w2, altura_linha1, cor=HexColor(paleta.fundo_cartao))
     titulo_cartao(c, "Taxa de acerto", x2 + w2 / 2, y_linha1 + altura_linha1 - 24, tamanho=14)
     taxa = metrics.taxa_acerto(atleta.trials)
-    desenhar_figura(c, grafico_gauge(taxa), x2 + 10, y_linha1 + 20, w2 - 20, altura_linha1 - 70)
+    desenhar_figura(c, grafico_gauge(taxa, cor=paleta.destaque), x2 + 10, y_linha1 + 20, w2 - 20, altura_linha1 - 70)
 
     # Card 3: Media do TR (Acertos/Erros)
-    cartao(c, x3, y_linha1, w3, altura_linha1)
+    cartao(c, x3, y_linha1, w3, altura_linha1, cor=HexColor(paleta.fundo_cartao))
     titulo_cartao(c, "Media do TR", x3 + w3 / 2, y_linha1 + altura_linha1 - 20)
     tr_por_resultado = metrics.media_tr_por_resultado(atleta.trials)
     _linha_rotulo_valor(
-        c, x3, y_linha1 + altura_linha1 - 60, w3, "Acertos", f"{tr_por_resultado['Acertou']:.1f} s".replace(".", ","), VERDE
+        c, x3, y_linha1 + altura_linha1 - 60, w3, "Acertos",
+        f"{tr_por_resultado['Acertou']:.1f} s".replace(".", ","), paleta.destaque,
     )
     _linha_rotulo_valor(
-        c, x3, y_linha1 + altura_linha1 - 105, w3, "Erros", f"{tr_por_resultado['Errou']:.1f} s".replace(".", ","), VERMELHO
+        c, x3, y_linha1 + altura_linha1 - 105, w3, "Erros",
+        f"{tr_por_resultado['Errou']:.1f} s".replace(".", ","), VERMELHO,
     )
 
     # Linha 2: Classificação do TR por resultado + Taxa de acerto por resposta
-    altura_linha2 = 220
+    altura_linha2 = 245
     y_linha2 = y_linha1 - GAP - altura_linha2
     colunas2 = distribuir_colunas(MARGEM, largura_pagina - 2 * MARGEM, pesos=[1.2, 1.0])
     (xa, wa), (xb, wb) = colunas2
 
-    cartao(c, xa, y_linha2, wa, altura_linha2)
+    cartao(c, xa, y_linha2, wa, altura_linha2, cor=HexColor(paleta.fundo_cartao))
     titulo_cartao(c, "Classificação do TR por acerto e erro", xa + wa / 2, y_linha2 + altura_linha2 - 20)
     cruzamento = metrics.classificacao_tr_por_resultado(atleta.trials)
     segmentos = {
@@ -117,15 +126,19 @@ def desenhar(
     fig_stacked = barras_empilhadas_horizontais(
         ["Acertou", "Errou"],
         segmentos,
-        {"Precoce": VERMELHO, "No tempo": VERDE, "Tardio": AMARELO},
+        {"Precoce": VERMELHO, "No tempo": paleta.destaque, "Tardio": AMARELO},
     )
     desenhar_figura(c, fig_stacked, xa + 10, y_linha2 + 10, wa - 20, altura_linha2 - 40)
 
-    cartao(c, xb, y_linha2, wb, altura_linha2)
+    cartao(c, xb, y_linha2, wb, altura_linha2, cor=HexColor(paleta.fundo_cartao))
     titulo_cartao(c, "Taxa de acerto por resposta", xb + wb / 2, y_linha2 + altura_linha2 - 20)
     taxa_resposta = metrics.taxa_acerto_por_resposta(atleta.trials)
     valores_radar = {rotulo: taxa_resposta[cat] for cat, rotulo in zip(_ORDEM_RADAR, _ROTULOS_RADAR)}
-    desenhar_figura(c, grafico_radar(valores_radar), xb + 10, y_linha2 + 10, wb - 20, altura_linha2 - 40)
+    desenhar_figura(
+        c, grafico_radar(valores_radar, cor=paleta.destaque), xb + 10, y_linha2 + 10, wb - 20, altura_linha2 - 40
+    )
+
+    rodape(c, largura_pagina=largura_pagina, data_emissao=data_emissao)
 
 
 def _rotulo_e_badge(
@@ -136,7 +149,7 @@ def _rotulo_e_badge(
     h_card: float,
     rotulo: str,
     valor: str,
-    cor: HexColor,
+    cor: str,
     *,
     deslocamento: int = 0,
 ) -> None:
@@ -151,7 +164,7 @@ def _rotulo_e_badge(
 
 
 def _linha_rotulo_valor(
-    c: Canvas, x_card: float, y: float, w_card: float, rotulo: str, valor: str, cor: HexColor
+    c: Canvas, x_card: float, y: float, w_card: float, rotulo: str, valor: str, cor: str
 ) -> None:
     c.saveState()
     c.setFont("Helvetica", 11)

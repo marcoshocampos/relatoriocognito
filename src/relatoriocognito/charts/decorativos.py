@@ -3,7 +3,7 @@ from __future__ import annotations
 from matplotlib.figure import Figure
 from matplotlib.patches import Circle, Wedge
 
-from relatoriocognito.charts.util import fundo_transparente
+from relatoriocognito.charts.estilo import fundo_transparente
 
 _CINZA_AVATAR = "#9E9E9E"
 

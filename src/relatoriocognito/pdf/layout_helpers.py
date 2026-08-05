@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import math
+from datetime import date
 from pathlib import Path
 
 from matplotlib.figure import Figure
@@ -9,14 +10,20 @@ from reportlab.lib.colors import HexColor
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen.canvas import Canvas
 
+from relatoriocognito.charts.colors import Paleta
 from relatoriocognito.charts.decorativos import icone_avatar
 from relatoriocognito.charts.util import figura_para_png
 from relatoriocognito.domain.models import Athlete
 
+# Fallbacks estáticos — usados só por quem chamar `cartao()` sem passar `cor`
+# explicitamente. Todo `pdf/layout_*.py` novo deve passar `HexColor(paleta.fundo_cartao)`
+# / `HexColor(paleta.fundo_cartao_destaque)` em vez de depender destas constantes,
+# para que o fundo responda à cor escolhida pelo usuário — ver docs/context/06-decisoes.md.
 COR_CARTAO = HexColor("#E4E4E4")
 COR_CARTAO_LAVANDA = HexColor("#CDDBFF")
 COR_TEXTO = HexColor("#1A1A1A")
 COR_SELO_VERDE = HexColor("#2E7D32")
+COR_RODAPE = HexColor("#8C8C8C")
 
 MARGEM = 24
 GAP = 16
@@ -112,6 +119,7 @@ def cabecalho(
     data: str,
     caminho_logo: str | Path | None,
     atleta: Athlete | None = None,
+    paleta: Paleta = Paleta(),
 ) -> float:
     """Desenha o cabeçalho comum às 4 páginas. Retorna o Y logo abaixo dele
     (topo disponível para o conteúdo da página)."""
@@ -121,7 +129,7 @@ def cabecalho(
     y_cartao = y_topo - ALTURA_CABECALHO
     meio_vertical = y_cartao + ALTURA_CABECALHO / 2
 
-    cartao(c, x, y_cartao, w, ALTURA_CABECALHO)
+    cartao(c, x, y_cartao, w, ALTURA_CABECALHO, cor=HexColor(paleta.fundo_cartao))
 
     if caminho_logo:
         c.drawImage(
@@ -161,3 +169,27 @@ def cabecalho(
     selo_cognito(c, largura_pagina - 4, altura_pagina - 4)
 
     return y_cartao - GAP
+
+
+def rodape(c: Canvas, *, largura_pagina: float, data_emissao: str | None = None) -> None:
+    """Rodapé fixo nas 4 páginas com a data de emissão do PDF (hoje) — diferente
+    da data que aparece no cabeçalho, que é a data da sessão registrada no CSV.
+
+    `data_emissao=None` calcula a data de hoje aqui mesmo — usado quando uma
+    página é desenhada isoladamente (teste manual, por exemplo). `pdf/report.py`
+    sempre passa um valor explícito, calculado uma única vez, para garantir que
+    as várias páginas do mesmo PDF tragam a mesma data mesmo se a geração
+    atravessar a virada da meia-noite.
+
+    Desenhado bem próximo à borda inferior da página (y=12): a página com menos
+    espaço livre (Comparação atleta grupo) ainda deixa ~33pt entre o fim do
+    último cartão e a borda, então não precisou reduzir nenhum cartão para abrir
+    espaço — ver docs/context/06-decisoes.md.
+    """
+    if data_emissao is None:
+        data_emissao = date.today().strftime("%d/%m/%Y")
+    c.saveState()
+    c.setFont("Helvetica", 8)
+    c.setFillColor(COR_RODAPE)
+    c.drawCentredString(largura_pagina / 2, 12, f"Relatório emitido em {data_emissao}")
+    c.restoreState()

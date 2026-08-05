@@ -5,6 +5,8 @@ from typing import Callable
 
 import customtkinter as ctk
 
+from relatoriocognito.charts.colors import COR_BASE_PADRAO
+
 
 class JanelaPrincipal(ctk.CTk):
     """Janela única que troca de tela (wizard de 3 passos). Guarda o estado
@@ -19,6 +21,7 @@ class JanelaPrincipal(ctk.CTk):
         self.nome_grupo: str = ""
         self.caminho_logo: Path | None = None
         self.caminhos_csv: list[Path] = []
+        self.cor_base: str = COR_BASE_PADRAO
 
         self._tela_atual: ctk.CTkFrame | None = None
         self.mostrar_tela_grupo()

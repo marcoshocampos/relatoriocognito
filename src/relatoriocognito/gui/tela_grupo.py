@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from tkinter import filedialog, messagebox
+from tkinter import colorchooser, filedialog, messagebox
 from typing import TYPE_CHECKING
 
 import customtkinter as ctk
@@ -41,6 +41,27 @@ class TelaGrupo(ctk.CTkFrame):
             side="left"
         )
 
+        ctk.CTkLabel(self, text="Cor base do relatório").pack(anchor="w")
+        ctk.CTkLabel(
+            self,
+            text="Usada nos gráficos e fundos que representam o time — evite a cor de um rival.",
+            text_color="gray50",
+        ).pack(anchor="w")
+        linha_cor = ctk.CTkFrame(self, fg_color="transparent")
+        linha_cor.pack(anchor="w", pady=(4, 20), fill="x")
+        self.amostra_cor = ctk.CTkFrame(
+            linha_cor,
+            width=32,
+            height=32,
+            corner_radius=6,
+            fg_color=controlador.cor_base,
+            border_width=1,
+            border_color="gray60",
+        )
+        self.amostra_cor.pack(side="left", padx=(0, 12))
+        self.amostra_cor.pack_propagate(False)
+        ctk.CTkButton(linha_cor, text="Escolher cor…", command=self._escolher_cor, width=160).pack(side="left")
+
         ctk.CTkButton(self, text="Avançar →", command=self._avancar, width=140).pack(
             anchor="e", side="bottom"
         )
@@ -55,6 +76,12 @@ class TelaGrupo(ctk.CTkFrame):
         if caminho:
             self.controlador.caminho_logo = Path(caminho)
             self.rotulo_logo.configure(text=self._texto_logo())
+
+    def _escolher_cor(self) -> None:
+        _, cor_hex = colorchooser.askcolor(title="Cor base do relatório", color=self.controlador.cor_base)
+        if cor_hex:
+            self.controlador.cor_base = cor_hex.upper()
+            self.amostra_cor.configure(fg_color=self.controlador.cor_base)
 
     def _avancar(self) -> None:
         nome = self.campo_nome.get().strip()

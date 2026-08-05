@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from matplotlib.figure import Figure
 
-from relatoriocognito.charts.util import fundo_transparente
+from relatoriocognito.charts.colors import GRAFITE, cor_texto_sobre
+from relatoriocognito.charts.estilo import FAMILIA_FONTE, fundo_transparente
 
 
 def grafico_pizza(
@@ -32,15 +33,21 @@ def grafico_pizza(
             return f"{pct:.1f}%"
         return str(round(pct * total / 100))
 
-    ax.pie(
+    _, rotulos_categoria, rotulos_valor = ax.pie(
         tamanhos,
         labels=categorias,
         colors=cores_wedges,
         autopct=autopct,
         startangle=90,
         counterclock=False,
-        wedgeprops=dict(width=0.4) if donut else None,
+        wedgeprops=dict(width=0.4, edgecolor="white", linewidth=1.5) if donut else dict(edgecolor="white", linewidth=1.5),
+        textprops={"fontfamily": FAMILIA_FONTE, "color": GRAFITE, "fontsize": 10},
     )
+    # Percentual/contagem escrito dentro da fatia precisa de contraste com a cor
+    # dela — texto escuro sobre uma fatia escura (ex.: vermelho saturado) some.
+    for rotulo_valor, cor_fatia in zip(rotulos_valor, cores_wedges):
+        rotulo_valor.set_color(cor_texto_sobre(cor_fatia))
+        rotulo_valor.set_fontsize(9)
     ax.set_aspect("equal")
     fundo_transparente(fig, ax)
     return fig

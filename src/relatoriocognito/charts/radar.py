@@ -4,15 +4,15 @@ import math
 
 from matplotlib.figure import Figure
 
-from relatoriocognito.charts.colors import VERDE
-from relatoriocognito.charts.util import fundo_transparente
+from relatoriocognito.charts.colors import CINZA_CLARO, CINZA_MEDIO, COR_BASE_PADRAO, GRAFITE
+from relatoriocognito.charts.estilo import FAMILIA_FONTE, fundo_transparente
 
 
 def grafico_radar(
     valores: dict[str, float],
     *,
     figsize: tuple[float, float] = (4.0, 4.0),
-    cor: str = VERDE,
+    cor: str = COR_BASE_PADRAO,
 ) -> Figure:
     """Radar/diamante. `valores` já deve vir na ordem desejada dos eixos (o
     primeiro fica no topo, os demais em sentido horário)."""
@@ -37,11 +37,13 @@ def grafico_radar(
         ax.plot(angulos_zero, [0] * len(angulos_zero), marker="o", markersize=6, color=cor, linestyle="none")
 
     ax.set_xticks(angulos)
-    ax.set_xticklabels(categorias)
+    ax.set_xticklabels(categorias, fontfamily=FAMILIA_FONTE, color=GRAFITE)
     ax.set_ylim(0, 100)
     ax.set_yticks([25, 50, 75, 100])
-    ax.set_yticklabels(["25%", "50%", "75%", "100%"], fontsize=7)
+    ax.set_yticklabels(["25%", "50%", "75%", "100%"], fontsize=7, color=CINZA_MEDIO)
     ax.set_theta_offset(math.pi / 2)
     ax.set_theta_direction(-1)
+    ax.spines["polar"].set_color(CINZA_CLARO)
+    ax.grid(color=CINZA_CLARO, linewidth=0.8)
     fundo_transparente(fig, ax)
     return fig

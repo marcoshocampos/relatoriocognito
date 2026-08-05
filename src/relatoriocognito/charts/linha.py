@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from matplotlib.figure import Figure
 
-from relatoriocognito.charts.colors import CINZA_MEDIO, VERDE
-from relatoriocognito.charts.util import fundo_transparente
+from relatoriocognito.charts.colors import CINZA_MEDIO, COR_BASE_PADRAO
+from relatoriocognito.charts.estilo import estilo_cartesiano, legenda_topo
 
 
 def grafico_linha_comparativa(
@@ -11,9 +11,11 @@ def grafico_linha_comparativa(
     serie_referencia: tuple[str, list[float]] | None,
     serie_atleta: tuple[str, list[float]],
     *,
+    cor_atleta: str = COR_BASE_PADRAO,
     figsize: tuple[float, float] = (4.5, 3.2),
 ) -> Figure:
-    """Duas linhas (referência em cinza, atleta em verde) sobre as mesmas categorias.
+    """Duas linhas (referência em cinza, atleta na cor base do relatório) sobre as
+    mesmas categorias.
 
     Reaproveitada tanto para "atleta x média do grupo" quanto "atleta x média da
     posição" (docs/context/07-pontos-em-aberto.md item 11).
@@ -29,7 +31,10 @@ def grafico_linha_comparativa(
 
     if serie_referencia is not None:
         nome_ref, valores_ref = serie_referencia
-        ax.plot(x, valores_ref, marker="o", color=CINZA_MEDIO, label=nome_ref)
+        ax.plot(
+            x, valores_ref, marker="o", markersize=5, linewidth=2,
+            color=CINZA_MEDIO, label=nome_ref,
+        )
     else:
         ax.text(
             0.5, 0.5, "Sem outro atleta\npara comparar",
@@ -38,13 +43,16 @@ def grafico_linha_comparativa(
         )
 
     nome_atleta, valores_atleta = serie_atleta
-    ax.plot(x, valores_atleta, marker="o", color=VERDE, label=nome_atleta)
+    ax.plot(
+        x, valores_atleta, marker="o", markersize=5, linewidth=2,
+        color=cor_atleta, label=nome_atleta,
+    )
 
     ax.set_xticks(x)
     ax.set_xticklabels(categorias)
     ax.set_ylim(0, 100)
-    ax.set_ylabel("Porcentagem")
-    ax.legend()
-    ax.spines[["top", "right"]].set_visible(False)
-    fundo_transparente(fig, ax)
+    ax.set_yticks([0, 25, 50, 75, 100])
+    ax.set_yticklabels(["0%", "25%", "50%", "75%", "100%"])
+    estilo_cartesiano(fig, ax)
+    legenda_topo(ax)
     return fig

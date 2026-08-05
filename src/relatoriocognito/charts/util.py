@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 
-from matplotlib.axes import Axes
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
 
@@ -18,10 +17,3 @@ def figura_para_png(fig: Figure, dpi: int = 200) -> bytes:
     buffer = io.BytesIO()
     fig.savefig(buffer, format="png", dpi=dpi, transparent=True, bbox_inches="tight")
     return buffer.getvalue()
-
-
-def fundo_transparente(fig: Figure, ax: Axes) -> None:
-    """As páginas do PDF desenham o cartão de fundo (cor sólida) por conta própria —
-    a figura matplotlib não deve competir com isso."""
-    fig.patch.set_alpha(0)
-    ax.patch.set_alpha(0)

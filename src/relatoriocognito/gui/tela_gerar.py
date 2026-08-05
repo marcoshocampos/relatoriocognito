@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import customtkinter as ctk
 
+from relatoriocognito.charts.colors import Paleta
 from relatoriocognito.domain.models import Group
 from relatoriocognito.io.csv_importer import CsvImportError, carregar_csv
 from relatoriocognito.pdf.report import gerar_relatorio_pdf
@@ -84,8 +85,9 @@ class TelaGerar(ctk.CTkFrame):
         self.update_idletasks()
 
         grupo = Group(nome=self.controlador.nome_grupo, athletes=atletas)
+        paleta = Paleta(base=self.controlador.cor_base)
         try:
-            gerar_relatorio_pdf(grupo, self.controlador.caminho_logo, Path(destino))
+            gerar_relatorio_pdf(grupo, self.controlador.caminho_logo, Path(destino), paleta=paleta)
         except Exception as erro:
             messagebox.showerror("Erro ao gerar PDF", f"Não foi possível gerar o relatório:\n{erro}")
             self.rotulo_status.configure(text="")
