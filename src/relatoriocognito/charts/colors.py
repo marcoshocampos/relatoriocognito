@@ -38,10 +38,12 @@ VERDE = "#7ED957"
 COR_BASE_PADRAO = VERDE
 
 # Proporção da cor base nos fundos de cartão. O usuário pediu "alpha de 20% ou
-# menos"; 12% para o cartão comum e 20% para o de destaque (que antes era
-# lavanda fixa) mantém o texto escuro legível mesmo com cor base saturada.
-_INTENSIDADE_FUNDO = 0.12
-_INTENSIDADE_FUNDO_DESTAQUE = 0.20
+# menos" e, depois de ver o resultado, pediu fundos mais claros (05/08/2026) —
+# daí 7%/12% em vez dos 12%/20% originais. Além de mais leve, deixa mais folga de
+# contraste para os elementos desenhados por cima do cartão, que é o que precisa
+# ser lido.
+_INTENSIDADE_FUNDO = 0.07
+_INTENSIDADE_FUNDO_DESTAQUE = 0.12
 
 
 def _para_rgb(cor: str) -> tuple[int, int, int]:

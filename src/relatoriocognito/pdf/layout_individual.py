@@ -100,12 +100,18 @@ def desenhar(
     cartao(c, x3, y_linha1, w3, altura_linha1, cor=HexColor(paleta.fundo_cartao))
     titulo_cartao(c, "Media do TR", x3 + w3 / 2, y_linha1 + altura_linha1 - 20)
     tr_por_resultado = metrics.media_tr_por_resultado(atleta.trials)
+    # As duas linhas ficam centralizadas no espaço abaixo do título — ancoradas no
+    # topo (como antes) sobrava quase metade do cartão vazia embaixo.
+    _ALTURA_LINHA = 32
+    _ESPACO_ENTRE = 13
+    altura_bloco = 2 * _ALTURA_LINHA + _ESPACO_ENTRE
+    y_base = y_linha1 + (altura_linha1 - 40 - altura_bloco) / 2
     _linha_rotulo_valor(
-        c, x3, y_linha1 + altura_linha1 - 60, w3, "Acertos",
+        c, x3, y_base + _ALTURA_LINHA + _ESPACO_ENTRE, w3, "Acertos",
         f"{tr_por_resultado['Acertou']:.1f} s".replace(".", ","), paleta.destaque,
     )
     _linha_rotulo_valor(
-        c, x3, y_linha1 + altura_linha1 - 105, w3, "Erros",
+        c, x3, y_base, w3, "Erros",
         f"{tr_por_resultado['Errou']:.1f} s".replace(".", ","), VERMELHO,
     )
 

@@ -55,7 +55,26 @@ def test_paleta_referencia_e_fixa_independente_da_cor_base():
     assert colors.Paleta(base="#FF00FF").referencia == colors.CINZA_MEDIO
 
 
-def test_paleta_fundo_cartao_deriva_da_cor_base():
+def _distancia_do_branco(cor: str) -> int:
+    """Quanto a cor se afasta do branco somando os 3 canais — proxy simples de
+    'quão forte é o tingimento' do fundo."""
+    return sum(255 - canal for canal in (int(cor[1:3], 16), int(cor[3:5], 16), int(cor[5:7], 16)))
+
+
+def test_paleta_fundo_cartao_e_um_tom_claro_da_cor_base():
+    # Sem fixar a intensidade: o valor exato é ajuste visual e já mudou uma vez
+    # (12%/20% -> 7%/12%). O que precisa valer sempre é a relação.
     paleta = colors.Paleta(base="#1E5FCC")
-    assert paleta.fundo_cartao == colors.misturar_com_branco("#1E5FCC", 0.12)
-    assert paleta.fundo_cartao_destaque == colors.misturar_com_branco("#1E5FCC", 0.20)
+    assert paleta.fundo_cartao != paleta.base
+    assert _distancia_do_branco(paleta.fundo_cartao) < _distancia_do_branco(paleta.base)
+
+
+def test_paleta_fundo_destaque_e_mais_forte_que_o_fundo_comum():
+    paleta = colors.Paleta(base="#1E5FCC")
+    assert _distancia_do_branco(paleta.fundo_cartao_destaque) > _distancia_do_branco(paleta.fundo_cartao)
+
+
+def test_paleta_fundos_acompanham_a_cor_base_escolhida():
+    azul = colors.Paleta(base="#1E5FCC").fundo_cartao
+    vermelho = colors.Paleta(base="#CC1E1E").fundo_cartao
+    assert azul != vermelho

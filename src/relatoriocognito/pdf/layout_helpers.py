@@ -55,6 +55,23 @@ def titulo_cartao(c: Canvas, texto: str, x_centro: float, y: float, *, tamanho: 
 
 
 def desenhar_figura(c: Canvas, fig: Figure, x: float, y: float, w: float, h: float) -> None:
+    """Desenha a figura ocupando exatamente a caixa (x, y, w, h).
+
+    A figura é redimensionada para o tamanho da caixa antes de rasterizar (72pt =
+    1 polegada), em vez de ser gerada num `figsize` arbitrário e encaixada
+    depois. Duas consequências que resolvem problemas reais:
+
+    - **Escala consistente:** com o aspecto da figura igual ao da caixa não sobra
+      espaço vazio, então o gráfico não muda de tamanho conforme o conteúdo
+      (ver `charts.util.figura_para_png`).
+    - **Tipografia previsível:** desenhado 1:1, um texto de 9pt no matplotlib sai
+      com 9pt no PDF, igual ao texto que o reportlab escreve ao lado. Antes a
+      figura era reduzida para caber, e a mesma fonte saía com ~5pt.
+
+    Por isso o `figsize` passado às funções de `charts/` é só um default para uso
+    isolado (teste, exploração) — aqui ele é sempre sobrescrito.
+    """
+    fig.set_size_inches(w / 72, h / 72)
     png_bytes = figura_para_png(fig)
     imagem = ImageReader(io.BytesIO(png_bytes))
     c.drawImage(imagem, x, y, width=w, height=h, preserveAspectRatio=True, anchor="c", mask="auto")

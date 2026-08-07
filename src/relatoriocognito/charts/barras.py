@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from matplotlib.figure import Figure
 from matplotlib.patches import Patch
 
@@ -8,6 +10,7 @@ from relatoriocognito.charts.estilo import (
     FAMILIA_FONTE,
     TAMANHO_VALOR,
     estilo_cartesiano,
+    formatar_uma_casa,
     fundo_transparente,
     legenda_topo,
     rotular_barras_verticais,
@@ -30,13 +33,18 @@ def barras_simples(
     *,
     figsize: tuple[float, float] = (4.0, 3.2),
     ylabel: str | None = None,
-    formato_valor: str = "{:.1f}",
+    formatador: Callable[[float], str] = formatar_uma_casa,
 ) -> Figure:
-    """Uma barra por categoria, cada uma com sua própria cor (ex.: Media de TR por pé)."""
+    """Uma barra por categoria, cada uma com sua própria cor (ex.: Media de TR por pé).
+
+    Default de uma casa decimal com vírgula porque o uso atual é tempo de reação
+    ("14,6" / "14,0" lado a lado, no mesmo formato do "14,3 s" que o reportlab
+    escreve no cartão de Media do TR).
+    """
     fig = Figure(figsize=figsize)
     ax = fig.add_subplot(111)
     barras = ax.bar(categorias, valores, color=cores, width=0.55)
-    rotular_barras_verticais(ax, barras, formato=formato_valor)
+    rotular_barras_verticais(ax, barras, formatador=formatador)
     if ylabel:
         ax.set_ylabel(ylabel)
     estilo_cartesiano(fig, ax)
@@ -186,6 +194,7 @@ def barras_empilhadas_horizontais(
                     ha="center",
                     va="center",
                     fontsize=TAMANHO_VALOR,
+                    fontweight="bold",
                     fontfamily=FAMILIA_FONTE,
                     color=cor_texto_sobre(cores[nome_segmento]),
                 )

@@ -10,7 +10,15 @@ from relatoriocognito.charts.colors import Paleta
 from relatoriocognito.domain.models import Group
 from relatoriocognito.pdf import layout_acoes_pe, layout_comparacao_grupo, layout_grupo, layout_individual
 
-TAMANHO_PAGINA = landscape(A4)
+# Página 16:9, mantendo a altura da A4 paisagem e alargando a largura
+# (841.89 -> 1058.27pt). O relatório é um painel para ver na tela, não um
+# documento para imprimir, e a proporção 16:9 é a mesma do modelo Canva de
+# referência. Manter a altura preserva todo o ajuste vertical dos cartões, e a
+# largura extra vai direto para os gráficos, que se dividem por
+# `distribuir_colunas` (proporcional à largura da página). Ver
+# docs/context/06-decisoes.md.
+_ALTURA_A4_PAISAGEM = landscape(A4)[1]
+TAMANHO_PAGINA = (_ALTURA_A4_PAISAGEM * 16 / 9, _ALTURA_A4_PAISAGEM)
 
 
 def gerar_relatorio_pdf(

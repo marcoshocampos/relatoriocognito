@@ -62,7 +62,11 @@ de CSV real, matplotlib ou GUI:
   (`layout_grupo.py`, `layout_individual.py`, `layout_acoes_pe.py`,
   `layout_comparacao_grupo.py`) mantém cada página isolada e fácil de ajustar
   visualmente sem afetar as outras; `layout_helpers.py` reúne o que é comum às 4
-  (cabeçalho, cartão, rodapé com a data de emissão).
+  (cabeçalho, cartão, rodapé com a data de emissão). É `layout_helpers.desenhar_figura`
+  que define o tamanho final de cada gráfico — ele redimensiona a figura para a
+  caixa do cartão antes de rasterizar, então **o tamanho de um gráfico se ajusta
+  mudando a caixa aqui, não o `figsize` em `charts/`** (ver
+  [06-decisoes.md](06-decisoes.md)).
 - **`gui/`** — telas em CustomTkinter: (1) nome do grupo + logo + cor base do
   time, (2) seleção dos CSVs dos atletas, (3) gerar relatório / salvar PDF.
   `gui/` só orquestra chamadas para `domain/`, `io/`, `charts/` e `pdf/` — não

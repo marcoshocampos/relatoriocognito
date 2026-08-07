@@ -16,6 +16,8 @@ o fallback. Ver docs/context/06-decisoes.md.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
@@ -25,7 +27,28 @@ FAMILIA_FONTE = ["Arial", "DejaVu Sans"]
 
 TAMANHO_ROTULO = 9
 TAMANHO_LEGENDA = 9
-TAMANHO_VALOR = 9
+TAMANHO_VALOR = 10
+
+
+def formatar_valor(valor: float) -> str:
+    """Inteiro quando o valor é redondo, senão uma casa decimal com vírgula.
+
+    Existe porque arredondar tudo para inteiro criava uma contradição visível: as
+    médias de "Media de acertos por decisão" são total/atletas (ex.: 27/4 = 6,75)
+    e o rótulo "7" aparecia sobre uma barra que parava claramente abaixo da linha
+    de grade do 7. Mostrar "6,8" mantém o rótulo coerente com a altura desenhada.
+    Vírgula decimal por ser PT-BR, igual ao "14,3 s" que o reportlab escreve nas
+    outras partes do relatório.
+    """
+    if abs(valor - round(valor)) < 1e-9:
+        return str(int(round(valor)))
+    return f"{valor:.1f}".replace(".", ",")
+
+
+def formatar_uma_casa(valor: float) -> str:
+    """Sempre uma casa decimal — para medidas de tempo, onde "14" no lugar de
+    "14,0" ao lado de "14,6" fica inconsistente."""
+    return f"{valor:.1f}".replace(".", ",")
 
 
 def _aplicar_fonte(ax: Axes) -> None:
@@ -99,20 +122,23 @@ def legenda_topo(ax: Axes, *, handles: list | None = None, colunas: int | None =
         texto.set_fontfamily(FAMILIA_FONTE)
 
 
-def rotular_barras_verticais(ax: Axes, barras, *, formato: str = "{:.0f}") -> None:
-    """Valor escrito acima de cada barra. O modelo Canva depende do eixo Y para
-    isso, mas nos cartões estreitos do PDF o valor exato fica ilegível — o rótulo
-    resolve sem precisar aumentar o gráfico."""
+def rotular_barras_verticais(
+    ax: Axes, barras, *, formatador: Callable[[float], str] = formatar_valor
+) -> None:
+    """Valor escrito acima de cada barra, em negrito. O modelo Canva depende do
+    eixo Y para isso, mas nos cartões estreitos do PDF o valor exato fica
+    ilegível — o rótulo resolve sem precisar aumentar o gráfico."""
     for barra in barras:
         altura = barra.get_height()
         ax.annotate(
-            formato.format(altura),
+            formatador(altura),
             xy=(barra.get_x() + barra.get_width() / 2, altura),
             xytext=(0, 3),
             textcoords="offset points",
             ha="center",
             va="bottom",
             fontsize=TAMANHO_VALOR,
+            fontweight="bold",
             color=GRAFITE,
             fontfamily=FAMILIA_FONTE,
         )

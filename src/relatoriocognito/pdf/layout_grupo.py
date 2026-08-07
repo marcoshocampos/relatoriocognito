@@ -110,9 +110,15 @@ def desenhar(
     titulo_cartao(c, "Media do TR", x1 + largura_media_tr / 2, y_media_tr + altura_media_tr - 22)
     media_tr = metrics.media_tr(trials)
     c.saveState()
-    c.setFont("Helvetica-Bold", 24)
+    # Centralizado no espaço abaixo do título, em vez de ancorado perto da base:
+    # é o único conteúdo do cartão, e um cartão largo com o número encostado
+    # embaixo fica visivelmente desequilibrado.
+    tamanho_valor = 34
+    altura_abaixo_titulo = altura_media_tr - 42
+    y_valor = y_media_tr + altura_abaixo_titulo / 2 - tamanho_valor / 3
+    c.setFont("Helvetica-Bold", tamanho_valor)
     valor_formatado = f"{media_tr:.1f} s".replace(".", ",")
-    c.drawCentredString(x1 + largura_media_tr / 2, y_media_tr + 26, valor_formatado)
+    c.drawCentredString(x1 + largura_media_tr / 2, y_valor, valor_formatado)
     c.restoreState()
 
     rodape(c, largura_pagina=largura_pagina, data_emissao=data_emissao)

@@ -219,6 +219,112 @@ Pedido do usuário: times que recebem o relatório reclamam quando a cor exibida
   (barra, linha) recebem `figsize` ajustado nos cartões que mudaram de
   proporção de forma mais acentuada.
 
+## Escala dos gráficos, formato da página e fundos (05/08/2026)
+
+Três problemas relatados pelo usuário depois de ver os PDFs gerados:
+
+- **Gráficos saíam em escalas diferentes entre dois relatórios.** Causa:
+  `charts/util.py` rasterizava com `bbox_inches="tight"`, que **recorta a figura
+  no conteúdo desenhado** — um eixo Y com valores de 3 dígitos gerava um PNG
+  mais largo que o mesmo gráfico com valores de 1 dígito (medido: aspecto 1.1247
+  vs 1.0941 no mesmo `figsize`). Como o PDF encaixava a imagem com
+  `preserveAspectRatio=True`, a sobra mudava conforme os dados e o gráfico
+  aparecia maior ou menor. **Corrigido** trocando o "tight" pelo layout engine
+  `constrained`, que encolhe a área de plotagem *dentro* da figura em vez de
+  aumentar a figura — o aspecto do PNG passa a ser exatamente o do `figsize`
+  (verificado: 1.6000 constante variando dados e comprimento de nome).
+  O "tight" existia para não cortar rótulo perto da borda (eixos do radar); o
+  `constrained` cobre esse caso.
+- **Gráficos pequenos demais.** `pdf/layout_helpers.desenhar_figura` agora
+  redimensiona a figura para o tamanho exato da caixa do cartão
+  (`fig.set_size_inches(w / 72, h / 72)`) antes de rasterizar, em vez de gerar
+  num `figsize` arbitrário e reduzir para caber. Além de acabar com a sobra,
+  isso torna a tipografia previsível: desenhado 1:1, um texto de 9pt no
+  matplotlib sai com 9pt no PDF — antes a figura era reduzida e a mesma fonte
+  saía com ~5pt. **Consequência para quem for mexer em `charts/`:** o `figsize`
+  dessas funções virou só um default para uso isolado (teste, exploração) —
+  dentro do relatório ele é sempre sobrescrito, então mudar `figsize` ali não
+  muda mais nada no PDF; para mudar o tamanho de um gráfico, mude a caixa do
+  cartão no `pdf/layout_*.py`.
+- **Página mais larga.** `TAMANHO_PAGINA` passou de `landscape(A4)`
+  (841.89 x 595.28) para 16:9 mantendo a altura (1058.27 x 595.28). O relatório
+  é um painel para ver na tela, não um documento para imprimir, e 16:9 é a
+  proporção do modelo Canva de referência. Manter a altura foi deliberado:
+  preserva todo o ajuste vertical dos cartões já calibrado, e a largura extra vai
+  direto para os gráficos, já que as colunas saem de `distribuir_colunas`
+  (proporcional à largura da página).
+- **Fundos mais claros.** `_INTENSIDADE_FUNDO` / `_INTENSIDADE_FUNDO_DESTAQUE`
+  em `charts/colors.py` foram de 12%/20% para 7%/12%.
+- **Cartões "Media do TR" (páginas de grupo e individual)** tinham o conteúdo
+  ancorado no topo, deixando quase metade do cartão vazia embaixo — agora é
+  centralizado no espaço abaixo do título, e o valor único da página de grupo
+  subiu de 24pt para 34pt, proporcional à largura nova.
+
+O teste de `Paleta.fundo_cartao` foi reescrito nessa rodada para checar a
+*relação* (fundo é um tom claro da base; destaque é mais forte que o comum) em
+vez dos valores exatos de intensidade — a versão anterior fixava 12%/20% e
+quebrou no primeiro ajuste visual, que é justamente o tipo de coisa que muda com
+frequência.
+
+## Legibilidade dos números nos gráficos (05/08/2026)
+
+Relatado pelo usuário testando com cor base preta:
+
+- **Números pouco visíveis.** Todos os valores desenhados sobre área colorida
+  (fatias de pizza/rosca, segmentos das barras empilhadas) e acima das barras
+  agora saem em **negrito**, e `TAMANHO_VALOR` subiu de 9 para 10.
+- **Percentuais da rosca espremidos na quina da fatia.** O `pctdistance` do
+  matplotlib tem default 0.6, que numa rosca de espessura 0.4 (anel de r=0.6 a
+  r=1.0) cai exatamente na **borda interna** do anel. Agora é calculado como o
+  meio da faixa colorida (`1 - largura_anel / 2`), então o número fica centrado
+  na fatia. A pizza cheia continua com o valor a 0.62 do raio.
+- **Rótulo de barra contradizendo a altura desenhada.** As médias de "Media de
+  acertos por decisão" são total/atletas, então dão valores como 6,75 — que o
+  formato `{:.0f}` arredondava para "7" sobre uma barra visivelmente abaixo da
+  linha de grade do 7. `charts/estilo.formatar_valor` agora mostra inteiro só
+  quando o valor é redondo, e uma casa decimal quando não é ("6,8"). Rótulo de
+  barra virou função formatadora (`formatador=`) em vez de string de formato.
+- **Vírgula decimal em todo lugar.** "Media de TR por pé" mostrava `14.6` e a
+  rosca `10.0%`, com ponto, enquanto o reportlab escrevia `14,3 s` com vírgula
+  na mesma página. Padronizado em vírgula (`formatar_uma_casa`).
+- **Percentuais do radar sumindo.** Ficam por cima da área preenchida, e em
+  cinza claro desapareciam (pior ainda com cor base escura). Agora são texto
+  escuro em negrito com **contorno branco** (`path_effects.withStroke`), que
+  funciona tanto sobre o preenchimento quanto sobre o fundo do cartão sem
+  precisar mover o rótulo para fora do gráfico.
+
+## Feedback de progresso e abertura automática do PDF (05/08/2026)
+
+Durante a geração do PDF a janela não dava sinal nenhum de vida (alguns segundos
+desenhando gráficos), e o usuário pediu um indicador de carregamento e que o
+arquivo abrisse sozinho no fim.
+
+- **A geração saiu da thread da interface.** Era a mudança obrigatória: rodando
+  no mesmo thread, o laço de eventos do Tk fica parado, a janela congela e
+  *nenhuma* animação roda — um spinner ficaria imóvel. Agora
+  `gui/tela_gerar.py` dispara uma `threading.Thread` (daemon) e acompanha o fim
+  dela com `after` a cada 100ms. A thread de trabalho não toca em widget nenhum:
+  devolve o resultado por `self._erro_geracao`, lido de volta na thread da
+  interface. Seguro do lado do matplotlib porque `charts/` monta as figuras via
+  `Figure()` + `FigureCanvasAgg` explícito, sem o estado global do pyplot —
+  verificado gerando um PDF completo pelo caminho da GUI.
+- **"Voltar" também é desabilitado durante a geração.** Sem isso, sair da tela no
+  meio destruiria o frame e o acompanhamento da thread mexeria em widget já
+  destruído.
+- **Spinner:** `gui/widgets/spinner.py`, arco em canvas girando via `after`. O
+  CustomTkinter só traz `CTkProgressBar` (barra), e um glifo animado ("◐") ficaria
+  à mercê da fonte instalada. Fica **ao lado** do botão, não dentro: sobrepor um
+  canvas no `CTkButton` exigiria mexer na estrutura interna do widget, e o botão
+  já sinaliza o estado ficando desabilitado com o texto "Gerando PDF…".
+- **Abertura automática:** `abrir_arquivo()` usa `os.startfile` no Windows (com
+  ramo para macOS/Linux) e **falha em silêncio** — o PDF já foi salvo, então não
+  ter leitor associado não transforma a geração em erro, e a tela continua
+  mostrando o caminho do arquivo.
+- **O messagebox de sucesso foi removido.** Com o PDF abrindo sozinho, o modal
+  virava um passo a mais para fechar antes de ver o resultado; o caminho do
+  arquivo agora aparece no rótulo de status verde da própria tela. Os
+  messageboxes de **erro** continuam.
+
 **Lembrete importante:** o `.exe` em `dist/` não se atualiza sozinho — é preciso
 rodar `scripts/build_exe.ps1` (ou o comando `pyinstaller` do `README.md`) depois
 de qualquer mudança de código para gerar um `.exe` novo.
