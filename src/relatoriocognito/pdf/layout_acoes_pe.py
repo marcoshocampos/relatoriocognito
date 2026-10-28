@@ -6,7 +6,7 @@ from reportlab.lib.colors import HexColor
 from reportlab.pdfgen.canvas import Canvas
 
 from relatoriocognito.charts.barras import barras_empilhadas_horizontais, barras_simples
-from relatoriocognito.charts.colors import Paleta, VERMELHO
+from relatoriocognito.charts.colors import Paleta, VERDE, VERMELHO
 from relatoriocognito.charts.pizza import grafico_pizza
 from relatoriocognito.domain import metrics
 from relatoriocognito.domain.models import Athlete, Group
@@ -55,21 +55,21 @@ def desenhar(
     altura_linha1 = 265
     y_linha1 = y_conteudo - altura_linha1
 
-    # Card 1: Ações por pé (pizza) — pé esquerdo usa a cor de destaque, pé direito
-    # fica com o vermelho fixo (mesma convenção de Acertos/Erros: um lado ganha a
-    # cor escolhida, o outro é sempre o par neutro/fixo).
+    # Verde/vermelho fixos em toda a página: esquerdo x direito segue a mesma
+    # convenção de cor do resto do relatório, independente da cor do time —
+    # ver docs/context/06-decisoes.md.
     cartao(c, x1, y_linha1, w1, altura_linha1, cor=HexColor(paleta.fundo_cartao))
     titulo_cartao(c, "Ações por pé", x1 + w1 / 2, y_linha1 + altura_linha1 - 20)
     distribuicao = metrics.distribuicao_pe_usado(atleta.trials)
     fig_pizza = grafico_pizza(
         {"Pé Esquerdo": distribuicao["Esquerdo"], "Pé direito": distribuicao["Direito"]},
-        {"Pé Esquerdo": paleta.destaque, "Pé direito": VERMELHO},
+        {"Pé Esquerdo": VERDE, "Pé direito": VERMELHO},
         mostrar_percentual=True,
     )
     desenhar_figura(c, fig_pizza, x1 + 10, y_linha1 + 10, w1 - 20, altura_linha1 - 40)
 
-    # Card 2: imagem de par de pés (decorativo)
-    cartao(c, x2, y_linha1, w2, altura_linha1, cor=HexColor(paleta.fundo_cartao))
+    # Card 2: imagem de par de pés (decorativo) — sem cartão de fundo, a imagem
+    # tem fundo transparente e fica solta sobre a página de propósito.
     c.drawImage(
         str(caminho_recurso("par_de_pes.png")),
         x2 + 15,
@@ -88,7 +88,7 @@ def desenhar(
     fig_barras = barras_simples(
         ["Esquerdo", "Direito"],
         [media_tr_pe["Esquerdo"], media_tr_pe["Direito"]],
-        [paleta.destaque, VERMELHO],
+        [VERDE, VERMELHO],
     )
     desenhar_figura(c, fig_barras, x3 + 10, y_linha1 + 10, w3 - 20, altura_linha1 - 40)
 
@@ -104,7 +104,7 @@ def desenhar(
         "Direito": [acertos_pe["Acertou"]["Direito"], acertos_pe["Errou"]["Direito"]],
     }
     fig_stacked = barras_empilhadas_horizontais(
-        ["Acertou", "Errou"], segmentos, {"Esquerdo": paleta.destaque, "Direito": VERMELHO}, figsize=(9.0, 2.4)
+        ["Acertou", "Errou"], segmentos, {"Esquerdo": VERDE, "Direito": VERMELHO}, figsize=(9.0, 2.4)
     )
     desenhar_figura(c, fig_stacked, MARGEM + 16, y_linha2 + 10, largura_total - 32, altura_linha2 - 40)
 

@@ -6,7 +6,7 @@ from reportlab.lib.colors import HexColor
 from reportlab.pdfgen.canvas import Canvas
 
 from relatoriocognito.charts.barras import barras_agrupadas
-from relatoriocognito.charts.colors import AMARELO, LARANJA, Paleta, VERMELHO
+from relatoriocognito.charts.colors import AMARELO, LARANJA, Paleta, VERDE, VERMELHO
 from relatoriocognito.charts.pizza import grafico_pizza
 from relatoriocognito.domain import metrics
 from relatoriocognito.domain.models import Group
@@ -64,17 +64,16 @@ def desenhar(
     cartao(c, x1, y_cartao_pequeno, w1, altura_cartao_pequeno, cor=HexColor(paleta.fundo_cartao))
     titulo_cartao(c, "Media de acertos do grupo", x1 + w1 / 2, y_cartao_pequeno + altura_cartao_pequeno - 20)
     contagem = metrics.contagem_acertos_erros(trials)
+    # Verde/vermelho fixos: aqui a cor é semântica (acertou x errou), não
+    # identidade do time — ver docs/context/06-decisoes.md.
     fig_pizza = grafico_pizza(
         {"Acertos": contagem["Acertou"], "Erros": contagem["Errou"]},
-        {"Acertos": paleta.destaque, "Erros": VERMELHO},
+        {"Acertos": VERDE, "Erros": VERMELHO},
     )
     desenhar_figura(c, fig_pizza, x1 + 10, y_cartao_pequeno + 10, w1 - 20, altura_cartao_pequeno - 40)
 
-    # Card 2: Media de classificação do TR (donut, fundo em destaque)
-    cartao(
-        c, x2, y_cartao_pequeno, w2, altura_cartao_pequeno,
-        cor=HexColor(paleta.fundo_cartao_destaque),
-    )
+    # Card 2: Media de classificação do TR (donut)
+    cartao(c, x2, y_cartao_pequeno, w2, altura_cartao_pequeno, cor=HexColor(paleta.fundo_cartao))
     titulo_cartao(c, "Media de classificação do TR", x2 + w2 / 2, y_cartao_pequeno + altura_cartao_pequeno - 20)
     dist = metrics.distribuicao_classificacao_tr(trials)
     fig_donut = grafico_pizza(
@@ -84,7 +83,7 @@ def desenhar(
             "Tardio": dist["Tardio"],
             "Perda de bola": dist["Perda de bola"],
         },
-        {"No tempo": paleta.destaque, "Precoce": AMARELO, "Tardio": LARANJA, "Perda de bola": VERMELHO},
+        {"No tempo": VERDE, "Precoce": AMARELO, "Tardio": LARANJA, "Perda de bola": VERMELHO},
         donut=True,
         mostrar_percentual=True,
     )

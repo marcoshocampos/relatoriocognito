@@ -5,14 +5,22 @@ Desde 26/07/2026 a cor de destaque deixou de ser fixa: o usuário escolhe a "cor
 base" do time na tela 1 do wizard, porque os times que recebem o relatório se
 incomodam quando a cor exibida é da paleta de um rival (ver docs/context/06-decisoes.md).
 
-Divisão adotada:
+Divisão adotada (revista em 05/08/2026 — a cor escolhida passou a valer em bem
+menos lugares do que na primeira versão):
 
-- **Cor base** (escolhida) — tudo que é destaque/atleta/dado real do grupo. Toma o
-  lugar que o verde ocupava.
+- **Semânticas** (fixas) — verde/vermelho/amarelo/laranja. São convenção de
+  leitura ("acertou", "errou", "precoce", "tardio"); derivá-las da cor base
+  tiraria o significado. É o caso da **maioria** dos gráficos: acertos x erros,
+  classificação do TR, ações por pé, taxa de acerto. Um time de cor vermelha não
+  transforma "acertou" em vermelho.
+- **Cor base** (escolhida) — só onde o gráfico representa *aquele time/atleta
+  especificamente*, em vez de um juízo de certo/errado: a série com o nome do
+  grupo em "Media de acertos por decisão", o radar "Taxa de acerto por resposta"
+  e os gráficos da página "Comparação atleta grupo". Mais o fundo dos cartões,
+  que é onde a identidade visual do time aparece sem competir com a leitura dos
+  dados.
 - **Neutros** (fixos) — séries de referência (média do grupo, média da posição,
   série "Ideal"), que existem para serem lidas como pano de fundo do dado real.
-- **Semânticas** (fixas) — vermelho/amarelo/laranja. São convenção de leitura
-  ("errou", "precoce", "tardio"); derivá-las da cor base tiraria o significado.
 """
 
 from __future__ import annotations
@@ -21,6 +29,10 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 # --- Semânticas: fixas, não respondem à cor base ---
+# VERDE = acertou/no tempo/bom; VERMELHO = errou/perda de bola; AMARELO e LARANJA
+# = precoce/tardio. Também é o valor padrão do seletor de cor (COR_BASE_PADRAO),
+# então um relatório sem escolha de cor sai idêntico ao modelo Canva.
+VERDE = "#7ED957"
 VERMELHO = "#FF3131"
 AMARELO = "#FFDE59"
 LARANJA = "#FF914D"
@@ -32,18 +44,17 @@ PRETO = "#000000"
 BRANCO = "#FFFFFF"
 GRAFITE = "#1A1A1A"
 
-# Verde do modelo Canva — hoje é só o valor padrão do seletor de cor, não mais
-# uma constante usada direto pelos gráficos.
-VERDE = "#7ED957"
 COR_BASE_PADRAO = VERDE
 
 # Proporção da cor base nos fundos de cartão. O usuário pediu "alpha de 20% ou
 # menos" e, depois de ver o resultado, pediu fundos mais claros (05/08/2026) —
-# daí 7%/12% em vez dos 12%/20% originais. Além de mais leve, deixa mais folga de
+# daí 7% em vez dos 12% originais. Além de mais leve, deixa mais folga de
 # contraste para os elementos desenhados por cima do cartão, que é o que precisa
-# ser lido.
+# ser lido. Todos os cartões usam a mesma intensidade: existiu por um tempo um
+# `fundo_cartao_destaque` mais forte para "Media de classificação do TR" (herança
+# do lilás que esse cartão tinha no Canva), mas sem cor própria no gráfico ele só
+# parecia um cartão escuro sem motivo.
 _INTENSIDADE_FUNDO = 0.07
-_INTENSIDADE_FUNDO_DESTAQUE = 0.12
 
 
 def _para_rgb(cor: str) -> tuple[int, int, int]:
@@ -117,10 +128,6 @@ class Paleta:
     @property
     def fundo_cartao(self) -> str:
         return misturar_com_branco(self.base, _INTENSIDADE_FUNDO)
-
-    @property
-    def fundo_cartao_destaque(self) -> str:
-        return misturar_com_branco(self.base, _INTENSIDADE_FUNDO_DESTAQUE)
 
     @property
     def texto_sobre_destaque(self) -> str:

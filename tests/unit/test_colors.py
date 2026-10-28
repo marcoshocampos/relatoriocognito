@@ -69,11 +69,6 @@ def test_paleta_fundo_cartao_e_um_tom_claro_da_cor_base():
     assert _distancia_do_branco(paleta.fundo_cartao) < _distancia_do_branco(paleta.base)
 
 
-def test_paleta_fundo_destaque_e_mais_forte_que_o_fundo_comum():
-    paleta = colors.Paleta(base="#1E5FCC")
-    assert _distancia_do_branco(paleta.fundo_cartao_destaque) > _distancia_do_branco(paleta.fundo_cartao)
-
-
 def test_paleta_fundos_acompanham_a_cor_base_escolhida():
     azul = colors.Paleta(base="#1E5FCC").fundo_cartao
     vermelho = colors.Paleta(base="#CC1E1E").fundo_cartao

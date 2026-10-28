@@ -6,7 +6,7 @@ from reportlab.lib.colors import HexColor
 from reportlab.pdfgen.canvas import Canvas
 
 from relatoriocognito.charts.barras import barras_empilhadas_horizontais
-from relatoriocognito.charts.colors import AMARELO, Paleta, VERMELHO, cor_texto_sobre
+from relatoriocognito.charts.colors import AMARELO, Paleta, VERDE, VERMELHO, cor_texto_sobre
 from relatoriocognito.charts.gauge import grafico_gauge
 from relatoriocognito.charts.radar import grafico_radar
 from relatoriocognito.domain import metrics
@@ -74,9 +74,11 @@ def desenhar(
     tentativas = len(atleta.trials)
     acertos = metrics.contagem_acertos_erros(atleta.trials)["Acertou"]
     media_grupo = metrics.media_acertos_por_atleta(group.athletes)
+    # Verde fixo, não a cor escolhida: "Acertos" aqui é leitura de certo/errado,
+    # não identidade do time — ver docs/context/06-decisoes.md.
     _rotulo_e_badge(c, x1, y_linha1, w1, altura_linha1, "Tentativas:", str(tentativas), "#BDBDBD")
     _rotulo_e_badge(
-        c, x1, y_linha1, w1, altura_linha1, "Acertos", str(acertos), paleta.destaque, deslocamento=1
+        c, x1, y_linha1, w1, altura_linha1, "Acertos", str(acertos), VERDE, deslocamento=1
     )
     _rotulo_e_badge(
         c,
@@ -94,7 +96,7 @@ def desenhar(
     cartao(c, x2, y_linha1, w2, altura_linha1, cor=HexColor(paleta.fundo_cartao))
     titulo_cartao(c, "Taxa de acerto", x2 + w2 / 2, y_linha1 + altura_linha1 - 24, tamanho=14)
     taxa = metrics.taxa_acerto(atleta.trials)
-    desenhar_figura(c, grafico_gauge(taxa, cor=paleta.destaque), x2 + 10, y_linha1 + 20, w2 - 20, altura_linha1 - 70)
+    desenhar_figura(c, grafico_gauge(taxa, cor=VERDE), x2 + 10, y_linha1 + 20, w2 - 20, altura_linha1 - 70)
 
     # Card 3: Media do TR (Acertos/Erros)
     cartao(c, x3, y_linha1, w3, altura_linha1, cor=HexColor(paleta.fundo_cartao))
@@ -108,7 +110,7 @@ def desenhar(
     y_base = y_linha1 + (altura_linha1 - 40 - altura_bloco) / 2
     _linha_rotulo_valor(
         c, x3, y_base + _ALTURA_LINHA + _ESPACO_ENTRE, w3, "Acertos",
-        f"{tr_por_resultado['Acertou']:.1f} s".replace(".", ","), paleta.destaque,
+        f"{tr_por_resultado['Acertou']:.1f} s".replace(".", ","), VERDE,
     )
     _linha_rotulo_valor(
         c, x3, y_base, w3, "Erros",
@@ -122,7 +124,7 @@ def desenhar(
     (xa, wa), (xb, wb) = colunas2
 
     cartao(c, xa, y_linha2, wa, altura_linha2, cor=HexColor(paleta.fundo_cartao))
-    titulo_cartao(c, "Classificação do TR por acerto e erro", xa + wa / 2, y_linha2 + altura_linha2 - 20)
+    titulo_cartao(c, "Frequência de decisão", xa + wa / 2, y_linha2 + altura_linha2 - 20)
     cruzamento = metrics.classificacao_tr_por_resultado(atleta.trials)
     segmentos = {
         "Precoce": [cruzamento["Acertou"]["Precoce"], cruzamento["Errou"]["Precoce"]],
@@ -132,7 +134,7 @@ def desenhar(
     fig_stacked = barras_empilhadas_horizontais(
         ["Acertou", "Errou"],
         segmentos,
-        {"Precoce": VERMELHO, "No tempo": paleta.destaque, "Tardio": AMARELO},
+        {"Precoce": VERMELHO, "No tempo": VERDE, "Tardio": AMARELO},
     )
     desenhar_figura(c, fig_stacked, xa + 10, y_linha2 + 10, wa - 20, altura_linha2 - 40)
 

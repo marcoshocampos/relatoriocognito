@@ -15,12 +15,11 @@ from relatoriocognito.charts.decorativos import icone_avatar
 from relatoriocognito.charts.util import figura_para_png
 from relatoriocognito.domain.models import Athlete
 
-# Fallbacks estáticos — usados só por quem chamar `cartao()` sem passar `cor`
-# explicitamente. Todo `pdf/layout_*.py` novo deve passar `HexColor(paleta.fundo_cartao)`
-# / `HexColor(paleta.fundo_cartao_destaque)` em vez de depender destas constantes,
-# para que o fundo responda à cor escolhida pelo usuário — ver docs/context/06-decisoes.md.
+# Fallback estático — usado só por quem chamar `cartao()` sem passar `cor`
+# explicitamente. Todo `pdf/layout_*.py` deve passar `HexColor(paleta.fundo_cartao)`
+# em vez de depender desta constante, para que o fundo responda à cor escolhida
+# pelo usuário — ver docs/context/06-decisoes.md.
 COR_CARTAO = HexColor("#E4E4E4")
-COR_CARTAO_LAVANDA = HexColor("#CDDBFF")
 COR_TEXTO = HexColor("#1A1A1A")
 COR_SELO_VERDE = HexColor("#2E7D32")
 COR_RODAPE = HexColor("#8C8C8C")
@@ -148,10 +147,34 @@ def cabecalho(
 
     cartao(c, x, y_cartao, w, ALTURA_CABECALHO, cor=HexColor(paleta.fundo_cartao))
 
+    # Atleta à esquerda, time à direita (invertido em 05/08/2026 a pedido do
+    # usuário — antes era time à esquerda e atleta à direita).
+    if atleta is not None:
+        desenhar_figura(c, icone_avatar(), x + 8, y_cartao + 6, 40, 40)
+        x_esquerda_texto = x + 56
+        c.saveState()
+        c.setFont("Helvetica-Bold", 11)
+        c.setFillColor(COR_TEXTO)
+        c.drawString(x_esquerda_texto, meio_vertical + 6, atleta.nome)
+        c.setFont("Helvetica", 10)
+        c.drawString(x_esquerda_texto, meio_vertical - 10, f"{atleta.lateralidade}   {atleta.posicao}")
+        c.restoreState()
+
+    c.saveState()
+    c.setFont("Helvetica-Bold", 15)
+    c.setFillColor(COR_TEXTO)
+    c.drawCentredString(largura_pagina / 2, meio_vertical - 5, f"{titulo_pagina} – {data}")
+    c.restoreState()
+
+    # O selo Cognito fica colado no canto superior direito da página e invade a
+    # faixa do cabeçalho — logo e nome do time param antes dele para não
+    # encostarem (com o time à esquerda isso não era problema).
+    x_limite_direito = x + w - 32
+    x_direita_logo = x_limite_direito - 36
     if caminho_logo:
         c.drawImage(
             str(caminho_logo),
-            x + 14,
+            x_direita_logo,
             y_cartao + 10,
             width=36,
             height=36,
@@ -163,25 +186,10 @@ def cabecalho(
     c.saveState()
     c.setFont("Helvetica-Bold", 13)
     c.setFillColor(COR_TEXTO)
-    c.drawString(x + 60, meio_vertical - 5, nome_grupo.upper())
+    # Sem logo o nome pode ocupar também o espaço que seria dele.
+    x_fim_nome = x_direita_logo - 10 if caminho_logo else x_limite_direito
+    c.drawRightString(x_fim_nome, meio_vertical - 5, nome_grupo.upper())
     c.restoreState()
-
-    c.saveState()
-    c.setFont("Helvetica-Bold", 15)
-    c.setFillColor(COR_TEXTO)
-    c.drawCentredString(largura_pagina / 2, meio_vertical - 5, f"{titulo_pagina} – {data}")
-    c.restoreState()
-
-    if atleta is not None:
-        x_direita_texto = x + w - 56
-        c.saveState()
-        c.setFont("Helvetica-Bold", 10)
-        c.setFillColor(COR_TEXTO)
-        c.drawRightString(x_direita_texto, meio_vertical + 6, atleta.nome)
-        c.setFont("Helvetica", 9)
-        c.drawRightString(x_direita_texto, meio_vertical - 10, f"{atleta.lateralidade}   {atleta.posicao}")
-        c.restoreState()
-        desenhar_figura(c, icone_avatar(), x + w - 46, y_cartao + 6, 40, 40)
 
     selo_cognito(c, largura_pagina - 4, altura_pagina - 4)
 

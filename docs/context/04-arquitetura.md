@@ -16,8 +16,8 @@ independente — não há persistência entre gerações de relatório.
      → [Leitura e validação dos CSVs]
      → [Cálculo das métricas (grupo, por atleta, por atleta x posição)]
      → [Geração dos gráficos, usando a cor base escolhida]
-     → [Montagem do PDF (1 página de grupo + 3 páginas por atleta selecionado)]
-     → [Salvar arquivo .pdf]
+     → [Montagem de 1 PDF por atleta (página de grupo + as 3 páginas dele)]
+     → [Salvar um .zip com todos os PDFs]
 ```
 
 A cor base (`charts.colors.Paleta`, ver [06-decisoes.md](06-decisoes.md)) é
@@ -25,11 +25,14 @@ escolhida na primeira tela e atravessa todas as camadas até `pdf/` e `charts/`
 como um parâmetro explícito (`paleta: Paleta`) — não é estado global nem
 configuração salva em disco, existe só durante a geração daquele relatório.
 
-O PDF final tem, por relatório: 1 página de grupo ("Dashboard Overview") +, para
-cada atleta selecionado, 3 páginas ("Dashboard individual", "Ações por pé",
-"Comparação atleta grupo") — ver
+A saída é **um PDF por atleta**, reunidos num ZIP (mudança de 11/08/2026, ver
+[06-decisoes.md](06-decisoes.md)). Cada PDF tem 4 páginas: a página de grupo
+("Dashboard Overview", idêntica em todos) + as 3 páginas daquele atleta
+("Dashboard individual", "Ações por pé", "Comparação atleta grupo") — ver
 [05-modelo-visual-referencia.md](05-modelo-visual-referencia.md) e decisão de escopo
-em [07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 10.
+em [07-pontos-em-aberto.md](07-pontos-em-aberto.md), item 10. As métricas de grupo
+e de posição continuam calculadas sobre **todos** os atletas carregados na
+sessão: o recorte por atleta é só de empacotamento, não de cálculo.
 
 ## Camadas e mapeamento para pastas do código
 

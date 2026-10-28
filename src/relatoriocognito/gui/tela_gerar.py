@@ -14,12 +14,14 @@ from relatoriocognito.charts.colors import Paleta
 from relatoriocognito.domain.models import Group
 from relatoriocognito.gui.widgets.spinner import SpinnerCircular
 from relatoriocognito.io.csv_importer import CsvImportError, carregar_csv
-from relatoriocognito.pdf.report import gerar_relatorio_pdf
+from relatoriocognito.pdf.report import gerar_relatorios_zip
 
 if TYPE_CHECKING:
     from relatoriocognito.gui.janela_principal import JanelaPrincipal
 
 _INTERVALO_VERIFICACAO_MS = 100
+# Plural: a saída é um ZIP com um PDF por atleta, não um arquivo só.
+_TEXTO_BOTAO = "Gerar e salvar relatórios"
 
 
 def abrir_arquivo(caminho: Path) -> None:
@@ -47,6 +49,8 @@ class TelaGerar(ctk.CTkFrame):
         super().__init__(master, fg_color="transparent")
         self.controlador = controlador
         self._erro_geracao: Exception | None = None
+        self._progresso: tuple[int, int, str] | None = None
+        self._nomes_gerados: list[str] = []
 
         ctk.CTkLabel(self, text="Gerar relatório", font=ctk.CTkFont(size=22, weight="bold")).pack(
             anchor="w", pady=(0, 4)
@@ -68,7 +72,7 @@ class TelaGerar(ctk.CTkFrame):
         linha_gerar = ctk.CTkFrame(self, fg_color="transparent")
         linha_gerar.pack(anchor="w", fill="x")
         self.botao_gerar = ctk.CTkButton(
-            linha_gerar, text="Gerar e salvar PDF", command=self._gerar, width=200, height=40
+            linha_gerar, text=_TEXTO_BOTAO, command=self._gerar, width=200, height=40
         )
         self.botao_gerar.pack(side="left")
         # Fica ao lado do botão (e não dentro dele): sobrepor um canvas no
@@ -101,7 +105,7 @@ class TelaGerar(ctk.CTkFrame):
     def _destravar(self) -> None:
         self.spinner.parar()
         self.spinner.pack_forget()
-        self.botao_gerar.configure(state="normal", text="Gerar e salvar PDF")
+        self.botao_gerar.configure(state="normal", text=_TEXTO_BOTAO)
         self.botao_voltar.configure(state="normal")
 
     # --- Fluxo -----------------------------------------------------------
@@ -121,18 +125,19 @@ class TelaGerar(ctk.CTkFrame):
                 self.botao_gerar.configure(state="normal")
                 return
 
+        # Um PDF por atleta, reunidos num ZIP — ver docs/context/06-decisoes.md.
         destino = filedialog.asksaveasfilename(
-            title="Salvar relatório",
-            defaultextension=".pdf",
-            filetypes=[("PDF", "*.pdf")],
-            initialfile=f"relatorio_{self.controlador.nome_grupo}.pdf",
+            title="Salvar relatórios",
+            defaultextension=".zip",
+            filetypes=[("Arquivo ZIP", "*.zip")],
+            initialfile=f"relatorios_{self.controlador.nome_grupo}.zip",
         )
         if not destino:
             self.rotulo_status.configure(text="")
             self.botao_gerar.configure(state="normal")
             return
 
-        self.rotulo_status.configure(text="Gerando PDF…")
+        self.rotulo_status.configure(text="Gerando PDFs…")
         self._travar_para_gerar()
 
         grupo = Group(nome=self.controlador.nome_grupo, athletes=atletas)
@@ -143,6 +148,8 @@ class TelaGerar(ctk.CTkFrame):
         # leva alguns segundos: no mesmo thread, o laço de eventos do Tk fica
         # parado, a janela congela e o spinner nem chega a girar.
         self._erro_geracao = None
+        self._progresso = None
+        self._nomes_gerados = []
         thread = threading.Thread(
             target=self._gerar_em_background,
             args=(grupo, paleta, caminho_destino),
@@ -153,16 +160,31 @@ class TelaGerar(ctk.CTkFrame):
 
     def _gerar_em_background(self, grupo: Group, paleta: Paleta, destino: Path) -> None:
         """Roda na thread de trabalho — não pode tocar em widget nenhum daqui.
-        O resultado volta por `self._erro_geracao`, lido pelo `_acompanhar`."""
+        O resultado volta por `self._erro_geracao` / `self._progresso`, lidos pelo
+        `_acompanhar` já na thread da interface."""
         try:
-            gerar_relatorio_pdf(grupo, self.controlador.caminho_logo, destino, paleta=paleta)
+            self._nomes_gerados = gerar_relatorios_zip(
+                grupo,
+                self.controlador.caminho_logo,
+                destino,
+                paleta=paleta,
+                progresso=self._registrar_progresso,
+            )
         except Exception as erro:  # noqa: BLE001 - qualquer falha vira mensagem na tela
             self._erro_geracao = erro
+
+    def _registrar_progresso(self, indice: int, total: int, nome_atleta: str) -> None:
+        """Chamado da thread de trabalho: só guarda o estado, sem tocar em widget
+        (quem escreve na tela é o `_acompanhar`)."""
+        self._progresso = (indice, total, nome_atleta)
 
     def _acompanhar(self, thread: threading.Thread, destino: Path) -> None:
         """Verifica periodicamente se a thread terminou, já de volta na thread da
         interface (é `after` quem chama), onde mexer em widget é seguro."""
         if thread.is_alive():
+            if self._progresso is not None:
+                indice, total, nome_atleta = self._progresso
+                self.rotulo_status.configure(text=f"Gerando PDF {indice} de {total} — {nome_atleta}…")
             self.after(_INTERVALO_VERIFICACAO_MS, lambda: self._acompanhar(thread, destino))
             return
 
@@ -170,14 +192,18 @@ class TelaGerar(ctk.CTkFrame):
 
         if self._erro_geracao is not None:
             messagebox.showerror(
-                "Erro ao gerar PDF", f"Não foi possível gerar o relatório:\n{self._erro_geracao}"
+                "Erro ao gerar relatórios",
+                f"Não foi possível gerar os relatórios:\n{self._erro_geracao}",
             )
             self.rotulo_status.configure(text="")
             return
 
+        quantidade = len(self._nomes_gerados)
+        plural = "s" if quantidade != 1 else ""
         self.rotulo_status.configure(
-            text=f"Relatório gerado com sucesso!\n{destino}", text_color="green"
+            text=f"{quantidade} relatório{plural} gerado{plural} com sucesso!\n{destino}",
+            text_color="green",
         )
-        # Sem messagebox de sucesso: o próprio PDF abrindo já é o retorno, e um
+        # Sem messagebox de sucesso: o próprio ZIP abrindo já é o retorno, e um
         # modal só criaria um passo a mais para o usuário fechar antes de vê-lo.
         abrir_arquivo(destino)

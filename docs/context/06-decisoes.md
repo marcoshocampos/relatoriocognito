@@ -325,6 +325,77 @@ arquivo abrisse sozinho no fim.
   arquivo agora aparece no rótulo de status verde da própria tela. Os
   messageboxes de **erro** continuam.
 
+## Alcance da cor escolhida, reduzido (05/08/2026)
+
+Depois de ver o resultado com uma cor real, o usuário reduziu bastante onde a cor
+escolhida vale. **Regra atual:** a cor do time só aparece onde o gráfico
+representa *aquele time/atleta especificamente*; onde a cor tem significado de
+certo/errado, ela é fixa (verde/vermelho/amarelo/laranja), independente do time.
+
+Responde à cor escolhida:
+- "Media de acertos por decisão" (a série leva o nome do grupo).
+- Radar "Taxa de acerto por resposta" (página individual).
+- Todos os gráficos de "Comparação atleta grupo".
+- Fundo dos cartões e do cabeçalho.
+
+Volta a ser fixo (verde/vermelho/amarelo/laranja):
+- Página de grupo: "Media de acertos do grupo", "Media de classificação do TR".
+- Página individual: badges de Tentativas/Acertos, gauge "Taxa de acerto",
+  "Media do TR", "Frequência de decisão".
+- Página inteira de "Ações por pé".
+
+`VERDE` voltou a ser constante semântica em `charts/colors.py` (acertou/no
+tempo/bom), além de continuar sendo o valor padrão do seletor de cor.
+
+Outras mudanças da mesma rodada:
+
+- **"Classificação do TR por acerto e erro" → "Frequência de decisão"** (só o
+  rótulo; a métrica não mudou).
+- **Fundo de "Media de classificação do TR" uniformizado.** Ele era mais escuro
+  por causa de um `fundo_cartao_destaque` (12% contra 7% dos outros), herdado do
+  lilás que esse cartão tinha no modelo Canva. Sem cor própria no gráfico, virava
+  um cartão escuro sem motivo — a propriedade foi removida, junto com a constante
+  morta `COR_CARTAO_LAVANDA`.
+- **Imagem do par de pés sem cartão de fundo** — fica solta sobre a página.
+- **Fontes de apoio maiores** (`charts/estilo.py`): legenda 9→12, rótulo de eixo
+  9→11, valor 10→11. No formato 16:9 os cartões ficaram largos e esses textos
+  tinham ficado pequenos demais em relação ao gráfico.
+- **Cabeçalho invertido:** atleta (avatar + nome + lateralidade/posição) à
+  esquerda, time (nome + logo) à direita. Efeito colateral que precisou de
+  ajuste: o selo "Cognito" fica colado no canto superior direito e invade a faixa
+  do cabeçalho, então logo e nome do time param antes dele — com o time à
+  esquerda isso não era problema.
+
+## Saída passa a ser um PDF por atleta, num ZIP (11/08/2026)
+
+Pedido do cliente: o download deve ser **por jogador**, para poder entregar a
+cada um só o relatório dele. Substitui a decisão original de "1 arquivo por
+sessão" (topo deste documento).
+
+- **Cada PDF tem 4 páginas:** a página de grupo ("Dashboard Overview", idêntica
+  em todos) + as 3 páginas daquele atleta.
+- **Os cálculos não mudaram.** Todas as comparações de grupo e de posição
+  continuam usando *todos* os atletas carregados na sessão — o recorte por
+  atleta é de empacotamento, não de cálculo. É o que preserva o sentido dos
+  gráficos de "Comparação atleta grupo".
+- **A entrega é um ZIP** (`pdf/report.gerar_relatorios_zip`), com os PDFs
+  nomeados `relatorio_<atleta>.pdf`. Sai ZIP mesmo com um atleta só: dois
+  formatos de saída significariam dois diálogos de salvar e dois caminhos de
+  código, para pouca diferença prática.
+- **Nome de arquivo é saneado.** O nome do atleta vem do campo `Jogador` do CSV,
+  que é texto livre: caracteres proibidos pelo Windows viram `-`, e atletas
+  homônimos ganham sufixo numérico (`relatorio_Ana_2.pdf`) para não se
+  sobrescreverem dentro do ZIP — a comparação é case-insensitive porque o
+  Windows não diferencia maiúscula em nome de arquivo.
+- **Os PDFs são montados em memória** (`io.BytesIO`) e escritos direto no ZIP,
+  sem passar por arquivo temporário.
+- **A tela mostra o progresso** ("Gerando PDF 2 de 5 — Miguel…"): com vários
+  atletas a espera ficou bem mais longa que a de um PDF só. O callback de
+  progresso roda na thread de trabalho e por isso só guarda o estado — quem
+  escreve na tela é o `after` da thread da interface (ver seção de 05/08/2026).
+- `gerar_relatorio_pdf` (PDF único com todos os atletas) **deixou de existir** —
+  não faz sentido manter dois formatos de saída divergindo.
+
 **Lembrete importante:** o `.exe` em `dist/` não se atualiza sozinho — é preciso
 rodar `scripts/build_exe.ps1` (ou o comando `pyinstaller` do `README.md`) depois
 de qualquer mudança de código para gerar um `.exe` novo.

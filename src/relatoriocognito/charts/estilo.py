@@ -25,9 +25,12 @@ from relatoriocognito.charts.colors import CINZA_CLARO, CINZA_MEDIO, GRAFITE
 
 FAMILIA_FONTE = ["Arial", "DejaVu Sans"]
 
-TAMANHO_ROTULO = 9
-TAMANHO_LEGENDA = 9
-TAMANHO_VALOR = 10
+# Aumentados em 05/08/2026 a pedido do usuário — no formato 16:9 os cartões
+# ficaram largos e os textos de apoio (legenda de série, rótulo de eixo) tinham
+# ficado pequenos demais em relação ao gráfico.
+TAMANHO_ROTULO = 11
+TAMANHO_LEGENDA = 12
+TAMANHO_VALOR = 11
 
 
 def formatar_valor(valor: float) -> str:
